@@ -105,6 +105,7 @@ public class BatchConfiguration {
     }
 
     @Bean
+    @StepScope
     public CompositeItemWriter<CompositeResultBean> compositeWriter() {
         CompositeItemWriter writer = new CompositeItemWriter();
         List delegates = new ArrayList();
