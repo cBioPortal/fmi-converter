@@ -49,6 +49,9 @@ public class FoundationFileTasklet implements Tasklet {
             // since files are sorted by filename/date, cases in more than one file 
             // will automatically only have their most recent data converted
             for (CaseType ct : newCases) {
+                if (fmiCaseTypeMap.containsKey(ct.getCase())) {
+                    LOG.warn("Sample found in more than one file. Using current file to update data for sample: " + ct.getCase());
+                }
                 fmiCaseTypeMap.put(ct.getCase(), ct);
             }
         }
