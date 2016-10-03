@@ -1,6 +1,39 @@
+/*
+ * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
+ * FOR A PARTICULAR PURPOSE. The software and documentation provided hereunder
+ * is on an "as is" basis, and Memorial Sloan-Kettering Cancer Center has no
+ * obligations to provide maintenance, support, updates, enhancements or
+ * modifications. In no event shall Memorial Sloan-Kettering Cancer Center be
+ * liable to any party for direct, indirect, special, incidental or
+ * consequential damages, including lost profits, arising out of the use of this
+ * software and its documentation, even if Memorial Sloan-Kettering Cancer
+ * Center has been advised of the possibility of such damage.
+ */
+
+/*
+ * This file is part of cBioPortal.
+ *
+ * cBioPortal is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.cbio.portal.pipelines.foundation.util;
 
-import org.cbio.portal.pipelines.foundation.model.CopyNumberAlterationType;
+import org.cbio.portal.pipelines.foundation.model.*;
+import org.cbio.portal.pipelines.foundation.model.staging.*;
 
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +52,7 @@ public class FoundationUtils {
     public static final String FOUNDATION_NA = "NA";
     public static final String FOUNDATION_EMPTY = "";    
     public static final String FOUNDATION_DNA_SUPPORT = "yes";
+    public static final Set<String> NULL_EMPTY_VALUES = new HashSet(Arrays.asList(new String[]{"NA", "N/A"}));
     
     private static final Map<Character,String> complementMap = new HashMap<>();
     private static final Map<Object, String> variantTypeMap = new HashMap<>();  
@@ -235,6 +269,53 @@ public class FoundationUtils {
         }
         
         return String.valueOf(endPosition);
+    }
+    
+    /**
+     * Resolve the fusion event.
+     * @param targetedGene
+     * @param otherGene
+     * @return 
+     */
+    public static String resolveFusionEvent(String targetedGene, String otherGene) {
+        String[] fusionEventParts = targetedGene.split("-");
+        
+        String fusionEvent = fusionEventParts[0];
+        if (!Strings.isNullOrEmpty(otherGene) && !NULL_EMPTY_VALUES.contains(otherGene)
+                && !otherGene.equals(targetedGene)) {
+            fusionEvent += "-" + otherGene + " fusion";
+        }
+        else {
+            if (targetedGene.contains("intergenic") || otherGene.equals(targetedGene)) {
+                fusionEvent += "-" + "intragenic";
+            }
+            else {
+                fusionEvent += " fusion";
+            }
+        }
+        
+        return fusionEvent;
+    }
+    
+    
+    /**
+     * Get the fusion event with the other gene set as the targeted gene.
+     * @param sampleId
+     * @param rearrangement
+     * @return FusionData
+     */
+    public static FusionData getOtherGeneFusionEvent(String sampleId, RearrangementType rearrangement) {
+        
+        String[] targetedGeneParts = rearrangement.getTargetedGene().split("-");
+        String newOtherGene = targetedGeneParts[0];
+        String newTargetedGene = rearrangement.getOtherGene();
+        if (targetedGeneParts.length > 1) {
+            newTargetedGene += "-" + targetedGeneParts[1];
+        }
+        rearrangement.setTargetedGene(newTargetedGene);
+        rearrangement.setOtherGene(newOtherGene);
+        
+        return new FusionData(sampleId, rearrangement);
     }
 
     /**
