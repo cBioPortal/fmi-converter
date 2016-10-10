@@ -53,10 +53,13 @@ public class FusionDataProcessor implements ItemProcessor<CaseType, String>{
             FusionData fd = new FusionData(caseType.getCase(), re);
             fusionRecords.add(transformRecord(fd));
             
-            // switch the targeted gene and other gene if other gene not empty
+            // switch the targeted gene and other gene if other gene not empty and if 
+            // other gene does not contain intergenic or '/'
             if (!FoundationUtils.NULL_EMPTY_VALUES.contains(re.getOtherGene()) 
-                    && !re.getOtherGene().equals(re.getTargetedGene())) {
+                    && !re.getOtherGene().equals(re.getTargetedGene()) && 
+                    !re.getOtherGene().contains("intergenic") && !re.getOtherGene().contains("/")) {
                 FusionData fdSwitched = FoundationUtils.getOtherGeneFusionEvent(caseType.getCase(), re);
+                fdSwitched.setFusion(fd.getFusion());
                 fusionRecords.add(transformRecord(fdSwitched));
             }
         }
