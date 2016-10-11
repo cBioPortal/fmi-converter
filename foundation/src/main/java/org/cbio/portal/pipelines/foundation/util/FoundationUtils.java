@@ -275,25 +275,30 @@ public class FoundationUtils {
      * Resolve the fusion event.
      * @param targetedGene
      * @param otherGene
+     * @param description
+     * @param comment
      * @return 
      */
-    public static String resolveFusionEvent(String targetedGene, String otherGene) {
+    public static String resolveFusionEvent(String targetedGene, String otherGene, String description, String comment) {
         String[] fusionEventParts = targetedGene.split("-");
         
         String fusionEvent = fusionEventParts[0];
         if (!Strings.isNullOrEmpty(otherGene) && !NULL_EMPTY_VALUES.contains(otherGene)
-                && !otherGene.equals(targetedGene)) {
-            fusionEvent += "-" + otherGene + " fusion";
+                && !otherGene.equals(targetedGene) && !otherGene.contains("intergenic")) {
+            fusionEvent += "-" + otherGene + " " +description;
         }
         else {
-            if (targetedGene.contains("intergenic") || otherGene.equals(targetedGene)) {
-                fusionEvent += "-" + "intragenic";
+            if (targetedGene.contains("intergenic") || otherGene.contains("intergenic")) {
+                fusionEvent += "-intragenic";
             }
             else {
-                fusionEvent += " fusion";
+                fusionEvent += " " + description;
             }
         }
-        
+
+        if (!Strings.isNullOrEmpty(comment)) {
+            fusionEvent += ": " + comment;
+        }
         return fusionEvent;
     }
     

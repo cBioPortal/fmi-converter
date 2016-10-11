@@ -56,7 +56,7 @@ import javax.xml.bind.annotation.*;
 public class RearrangementType {
      
     @XmlElement(name = "comment", required = false)
-     protected String comment;
+    private String comment;
      
     @XmlMixed
     protected List<Serializable> content;
@@ -213,6 +213,20 @@ public class RearrangementType {
      */
     public void setTargetedGene(String targetedGene) {
         this.targetedGene = targetedGene;
+    }
+
+    /**
+     * @return the comment
+     */
+    public String getComment() {
+        return comment;
+    }
+
+    /**
+     * @param comment the comment to set
+     */
+    public void setComment(String comment) {
+        this.comment = comment;
     }
     
  }

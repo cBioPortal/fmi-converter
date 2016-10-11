@@ -59,8 +59,8 @@ public class FoundationReader implements ItemStreamReader<CaseType> {
         else {
             this.foundationCaseList = new ArrayList(foundationCaseListExecution);
         }
-        
     }
+        
     @Override
     public void update(ExecutionContext executionContext) throws ItemStreamException{}
     
