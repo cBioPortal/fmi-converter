@@ -46,13 +46,20 @@ import javax.xml.bind.annotation.*;
 public class CasesType {
     
     @XmlElement(name = "Case")
-    protected List<CaseType> _case;
+    private List<CaseType> _case;
 
     /**
      * @return the _case
      */
     public List<CaseType> getCase() {
         return _case;
+    }
+
+    /**
+     * @param _case the _case to set
+     */
+    public void setCase(List<CaseType> _case) {
+        this._case = _case;
     }
 
 }

@@ -153,13 +153,13 @@ public class MutationData {
         this.matchNormValidationAllele1 = FoundationUtils.FOUNDATION_EMPTY;
         this.matchNormValidationAllele2 = FoundationUtils.FOUNDATION_EMPTY;
         this.verificationStatus = FoundationUtils.FOUNDATION_UNKNOWN;
-        this.mutationStatus = FoundationUtils.FOUNDATION_EMPTY;
+        this.mutationStatus = FoundationUtils.FOUNDATION_MUTATION_STATUS;
         this.sequencingPhase = FoundationUtils.FOUNDATION_EMPTY;
-        this.sequenceSource = FoundationUtils.FOUNDATION_EMPTY;
+        this.sequenceSource = FoundationUtils.FOUNDATION_SEQUENCE_SOURCE;
         this.validationMethod = FoundationUtils.FOUNDATION_EMPTY;
         this.score = FoundationUtils.FOUNDATION_EMPTY;
         this.bamFile = FoundationUtils.FOUNDATION_EMPTY;
-        this.sequencer = FoundationUtils.FOUNDATION_EMPTY;
+        this.sequencer = FoundationUtils.FOUNDATION_CENTER + "_Platform";
         this.tumorSampleUUID = FoundationUtils.FOUNDATION_EMPTY;
         this.matchedNormSampleUUID = FoundationUtils.FOUNDATION_EMPTY;
         this.nRefCount = FoundationUtils.FOUNDATION_EMPTY;

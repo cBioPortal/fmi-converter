@@ -58,7 +58,8 @@ public class FoundationPipeline {
         gnuOptions.addOption("h", "help", false, "shows this help document and quits.")
             .addOption("s", "source", true, "Foundation .XML source directory" )
             .addOption ("o", "output", true, "Output directory for writing staging files")
-            .addOption ("c", "cancer_study_id", true, "Cancer study identifier for meta data");
+            .addOption ("c", "cancer_study_id", true, "Cancer study identifier for meta data")
+            .addOption("xml", "generate_xml", false, "Generate merged XML document ");
          
         return gnuOptions;
     }   
@@ -69,25 +70,29 @@ public class FoundationPipeline {
         System.exit(exitStatus);
     }  
             
-    private static void launchJob(String[] args, String sourceDirectory, String outputDirectory, String cancerStudyId) throws Exception {
+    private static void launchJob(String[] args, String sourceDirectory, String outputDirectory, String cancerStudyId, boolean generateXmlDocument) throws Exception {
         // set up application context and job launcher
         SpringApplication app = new SpringApplication(FoundationPipeline.class);
         ConfigurableApplicationContext ctx= app.run(args);
         JobLauncher jobLauncher = ctx.getBean(JobLauncher.class);
 
+        // get the appropriate job name
+        String jobName = generateXmlDocument?
+                BatchConfiguration.FOUNDATION_XML_DOCUMENT_JOB:BatchConfiguration.FOUNDATION_JOB;
+        
         // configure job parameters and launch job
-        Job foundationJob = ctx.getBean(BatchConfiguration.FOUNDATION_JOB, Job.class);
+        Job foundationJob = ctx.getBean(jobName, Job.class);
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("sourceDirectory", sourceDirectory)
                 .addString("outputDirectory", outputDirectory)
                 .addString ("cancerStudyId", cancerStudyId)
-                .toJobParameters();  
+                .toJobParameters();
         JobExecution jobExecution = jobLauncher.run(foundationJob, jobParameters);
         
         // close job after completion 
-        LOG.info("Closing FoundationPipeline with status: " + jobExecution.getStatus());
+        LOG.info("Closing FoundationPipeline.");
         ctx.close();
-    }      
+    }
     
     public static void main(String[] args) throws Exception {        
         Options gnuOptions = FoundationPipeline.getOptions(args);
@@ -97,19 +102,23 @@ public class FoundationPipeline {
             !commandLine.hasOption("source") ||
             !commandLine.hasOption("output") ||
             !commandLine.hasOption("cancer_study_id"))  {
-            for (String a : args) {
-                System.out.println(a);
-            }
             help(gnuOptions, 0);        
         }
-        
+        for (String v : commandLine.getArgList()) {
+            System.out.println(v);
+        }
+
         // light pre-processing for source directory and output directory paths
         String sourceDirectory = commandLine.getOptionValue("source");
         String outputDirectory = commandLine.getOptionValue("output");
+        String cancerStudyId = commandLine.getOptionValue("cancer_study_id");
         if (!sourceDirectory.endsWith(File.separator)) sourceDirectory += File.separator;
         if (!outputDirectory.endsWith(File.separator)) outputDirectory += File.separator;
+        
+        // determine whether to run xml document generator job or not
+        boolean generateXmlDocument = commandLine.hasOption("generate_xml");
 
-        launchJob(args, sourceDirectory, outputDirectory, commandLine.getOptionValue("cancer_study_id"));
+        launchJob(args, sourceDirectory, outputDirectory, cancerStudyId, generateXmlDocument);
     }
     
 }
