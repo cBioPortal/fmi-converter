@@ -142,7 +142,7 @@ public class MutationData {
          */
         this.center = FoundationUtils.FOUNDATION_CENTER;
         this.build = FoundationUtils.FOUNDATION_BUILD;
-        this.tumorAllele2 = FoundationUtils.FOUNDATION_NA;        
+        this.tumorAllele2 = FoundationUtils.FOUNDATION_EMPTY;        
         this.dbSNPRS = FoundationUtils.FOUNDATION_EMPTY;
         this.dbSNPValStatus = FoundationUtils.FOUNDATION_EMPTY;
         this.matchedNormSampleBarcode = FoundationUtils.FOUNDATION_EMPTY;
