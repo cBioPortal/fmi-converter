@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Value;
 @EnableBatchProcessing
 public class BatchConfiguration {
     public static final String FOUNDATION_JOB = "foundationJob";
+    public static final String FOUNDATION_XML_DOCUMENT_JOB = "foundationXmlDocumentJob";
 
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
@@ -74,7 +75,18 @@ public class BatchConfiguration {
                 .next(generalDataStep())
                 .next(metaDataStep())
             .build();                        
-    }    
+    }
+    
+    /**
+     * Foundation XML document generator job
+     */
+    @Bean
+    public Job foundationXmlDocumentJob() {
+        return jobBuilderFactory.get(FOUNDATION_XML_DOCUMENT_JOB)
+                .start(extractFileDataStep())
+                .next(foundationXmlGeneratorStep())
+                .build();
+    }
     
     /**
      * File processing Step.
@@ -96,7 +108,34 @@ public class BatchConfiguration {
     @StepScope
     public Tasklet foundationFileTasklet() {
         return new FoundationFileTasklet();
-    }    
+    }
+    
+    /**
+     * XML document generator step.
+     */
+    @Bean
+    public Step foundationXmlGeneratorStep() {
+        return stepBuilderFactory.get("foundationXmlGeneratorStep")
+                .listener(foundationXmlGeneratorListener())
+                .tasklet(foundationXmlGeneratorTasklet())
+                .build();
+    }
+    
+    /**
+     * Foundation XML document generator tasklet.
+     * Merges Foundation cases into single ClientCaseInfoType instance and 
+     * writes output as a formatted XML document.
+     */
+    @Bean
+    @StepScope
+    public Tasklet foundationXmlGeneratorTasklet() {
+        return new FoundationXmlGeneratorTasklet();
+    }
+    
+    @Bean
+    public StepExecutionListener foundationXmlGeneratorListener() {
+        return new FoundationXmlGeneratorListener();
+    }
     
     
     /**

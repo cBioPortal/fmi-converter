@@ -32,6 +32,7 @@
 
 package org.cbio.portal.pipelines.foundation.model;
 
+import com.google.common.base.Strings;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -77,6 +78,9 @@ public class CaseType {
      * @return the _case
      */
     public String getCase() {
+        if (Strings.isNullOrEmpty(variantReport.getTestRequest())) {
+            return _case;
+        }
         return variantReport.getTestRequest();
     }
 

@@ -52,6 +52,8 @@ public class FoundationUtils {
     public static final String FOUNDATION_NA = "NA";
     public static final String FOUNDATION_EMPTY = "";    
     public static final String FOUNDATION_DNA_SUPPORT = "yes";
+    public static final String FOUNDATION_MUTATION_STATUS = "SOMATIC";
+    public static final String FOUNDATION_SEQUENCE_SOURCE = "Exome";
     public static final Set<String> NULL_EMPTY_VALUES = new HashSet(Arrays.asList(new String[]{"NA", "N/A"}));
     
     private static final Map<Character,String> complementMap = new HashMap<>();
