@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -44,19 +44,39 @@ import org.springframework.batch.item.ItemProcessor;
  * @author Prithi Chakrapani, ochoaa
  */
 public class ClinicalDataProcessor implements ItemProcessor<CaseType, String> {
+    
+    private boolean addData;
+    private List<String> columns;
 
+    public void setProperties(boolean addData, List<String> columns) {
+        this.addData = addData;
+        this.columns = columns;
+    }
+    
     @Override
-    public String process(final CaseType caseType) throws Exception {
+    public String process(CaseType caseType) throws Exception {
         ClinicalData clinicalData = new ClinicalData(caseType);
         Map<String,String> map = clinicalData.getStagingMap();
         
+        // get standard clinical data values for record
         List<String> record = new ArrayList();
         for (String field : map.keySet()) {
             String value = clinicalData.getClass().getMethod(map.get(field)).invoke(clinicalData).toString();
             record.add(value);
         }
         
-        return StringUtils.join(record, "\t");        
+        // add non-human content data to record for if applicable
+        if (addData) {
+            for (String organism : columns) {
+                String value = "";
+                if (clinicalData.getAdditionalProperties().containsKey(organism)) {
+                    value = clinicalData.getAdditionalProperties().get(organism);
+                }
+                record.add(value);
+            }
+        }
+        
+        return StringUtils.join(record, "\t");
     }
-    
+
 }
