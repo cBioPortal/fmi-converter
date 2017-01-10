@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -34,6 +34,7 @@ package org.cbio.portal.pipelines.foundation;
 
 import org.cbio.portal.pipelines.foundation.model.*;
 import org.cbio.portal.pipelines.foundation.model.staging.MutationData;
+import org.cbio.portal.pipelines.foundation.util.GeneDataUtils;
 
 import java.util.*;
 import org.apache.commons.lang.StringUtils;
@@ -45,14 +46,25 @@ import org.springframework.batch.item.ItemProcessor;
  */
 public class MutationDataProcessor implements ItemProcessor<CaseType, String> {
    
+    private GeneDataUtils geneDataUtils;
+    
+    public void setProperties(GeneDataUtils geneDataUtils) {
+        this.geneDataUtils = geneDataUtils;
+    }
+    
     @Override
     public String process(final CaseType caseType) throws Exception {
         List<String> mutationRecords = new ArrayList();
         for (ShortVariantType sv : caseType.getVariantReport().getShortVariants().getShortVariant()) {
             MutationData md = new MutationData(caseType.getCase(), sv);
+            md.setGene(geneDataUtils.resolveGeneSymbol(md.getGene()));
+            md.setEntrezGeneId(geneDataUtils.resolveEntrezId(md.getGene()));
+            // skip records with ncRNAs
+            if (geneDataUtils.isNcRNA(md.getGene())) {
+                continue;
+            }
             mutationRecords.add(transformRecord(md));                
         }
-        
         return StringUtils.join(mutationRecords, "\n");
     }
         

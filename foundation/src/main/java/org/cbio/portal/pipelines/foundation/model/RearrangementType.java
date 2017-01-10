@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -43,20 +43,20 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RearrangementType", propOrder = {
     "comment",
-    "content",
-    "description",
-    "inFrame",
-    "otherGene",
-    "pos1",
-    "pos2",
-    "status",
-    "supportingReadPairs",
-    "targetedGene"
+    "dnaEvidence",
+    "rnaEvidence",
+    "content"
 })
 public class RearrangementType {
      
     @XmlElement(name = "comment", required = false)
-    private String comment;
+    protected String comment;
+    
+    @XmlElement(name = "dna-evidence", required = false)
+    protected DnaEvidenceType dnaEvidence;
+
+    @XmlElement(name = "rna-evidence", required = false)
+    protected RnaEvidenceType rnaEvidence;
      
     @XmlMixed
     protected List<Serializable> content;
@@ -64,6 +64,9 @@ public class RearrangementType {
     @XmlAttribute(name = "description")
     protected String description;
 
+    @XmlAttribute(name = "equivocal")
+    protected boolean equivocal;
+    
     @XmlAttribute(name = "in-frame")
     protected String inFrame;
 
@@ -85,13 +88,57 @@ public class RearrangementType {
     @XmlAttribute(name = "targeted-gene")
     protected String targetedGene;
 
+    @XmlAttribute(name = "type")
+    protected String type;
+    
+    /**
+     * @return the comment
+     */
+    public String getComment() {
+        return comment;
+    }
 
+    /**
+     * @param comment the comment to set
+     */
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
+    /**
+     * @return the dnaEvidence
+     */
+    public DnaEvidenceType getDnaEvidence() {
+        return dnaEvidence;
+    }
+
+    /**
+     * @param dnaEvidence the dnaEvidence to set
+     */
+    public void setDnaEvidence(DnaEvidenceType dnaEvidence) {
+        this.dnaEvidence = dnaEvidence;
+    }
+
+    /**
+     * @return the rnaEvidence
+     */
+    public RnaEvidenceType getRnaEvidence() {
+        return rnaEvidence;
+    }
+
+    /**
+     * @param rnaEvidence the rnaEvidence to set
+     */
+    public void setRnaEvidence(RnaEvidenceType rnaEvidence) {
+        this.rnaEvidence = rnaEvidence;
+    }
+    
     /**
      * @return the content
      */
     public List<Serializable> getContent() {
         if (content == null) {
-            content = new ArrayList<Serializable>();
+            content = new ArrayList<>();
         }
         return this.content;
     }    
@@ -117,6 +164,20 @@ public class RearrangementType {
         this.description = description;
     }
 
+    /**
+     * @return the equivocal
+     */
+    public boolean isEquivocal() {
+        return equivocal;
+    }
+
+    /**
+     * @param equivocal the equivocal to set
+     */
+    public void setEquivocal(boolean equivocal) {
+        this.equivocal = equivocal;
+    }
+    
     /**
      * @return the inFrame
      */
@@ -214,19 +275,19 @@ public class RearrangementType {
     public void setTargetedGene(String targetedGene) {
         this.targetedGene = targetedGene;
     }
-
+    
     /**
-     * @return the comment
+     * @return the type
      */
-    public String getComment() {
-        return comment;
+    public String getType() {
+        return type;
     }
 
     /**
-     * @param comment the comment to set
+     * @param type the type to set
      */
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setType(String type) {
+        this.type = type;
     }
     
  }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -32,55 +32,74 @@
 
 package org.cbio.portal.pipelines.foundation.model;
 
+import java.io.Serializable;
+import java.util.*;
 import javax.xml.bind.annotation.*;
 
 /**
  *
  * @author ochoaa
  */
-@XmlRootElement(name="ResultsReport")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ResultsReportType", propOrder = {
-    "variantReport",
-    "resultsPayload"
+@XmlType(name = "BiomarkersType", propOrder = {
+    "content",
+    "microsatelliteInstability", 
+    "tumorMutationBurden"
 })
-public class ResultsReportType {
+public class BiomarkersType {
     
-    @XmlElement(name = "variant-report", required = false)
-    protected VariantReportType variantReport;
-    
-    @XmlElement(name = "ResultsPayload", required = false)
-    protected ResultsPayloadType resultsPayload;
+    @XmlMixed
+    protected List<Serializable> content;
+
+    @XmlElement(name = "microsatellite-instability", required = false)
+    protected MicrosatelliteInstabilityType microsatelliteInstability;
+
+    @XmlElement(name = "tumor-mutation-burden", required = false)
+    protected TumorMutationBurdenType tumorMutationBurden;
 
     /**
-     * @return the variantReport
+     * @return the content
      */
-    public VariantReportType getVariantReport() {
-        if (variantReport == null) {
-            return resultsPayload.getVariantReport();
+    public List<Serializable> getContent() {
+        if (content == null) {
+            content = new ArrayList<>();
         }
-        return variantReport;
+        return this.content;
+    }    
+    
+    /**
+     * @param content the content to set
+     */
+    public void setContent(List<Serializable> content) {
+        this.content = content;
+    }
+    
+    /**
+     * @return the microsatelliteInstability
+     */
+    public MicrosatelliteInstabilityType getMicrosatelliteInstability() {
+        return microsatelliteInstability;
     }
 
     /**
-     * @param variantReport the variantReport to set
+     * @param microsatelliteInstability the microsatelliteInstability to set
      */
-    public void setVariantReport(VariantReportType variantReport) {
-        this.variantReport = variantReport;
+    public void setMicrosatelliteInstability(MicrosatelliteInstabilityType microsatelliteInstability) {
+        this.microsatelliteInstability = microsatelliteInstability;
     }
 
     /**
-     * @return the resultsPayload
+     * @return the tumorMutationBurden
      */
-    public ResultsPayloadType getResultsPayload() {
-        return resultsPayload;
+    public TumorMutationBurdenType getTumorMutationBurden() {
+        return tumorMutationBurden;
     }
 
     /**
-     * @param resultsPayload the resultsPayload to set
+     * @param tumorMutationBurden the tumorMutationBurden to set
      */
-    public void setResultsPayloadType(ResultsPayloadType resultsPayload) {
-        this.resultsPayload = resultsPayload;
+    public void setTumorMutationBurden(TumorMutationBurdenType tumorMutationBurden) {
+        this.tumorMutationBurden = tumorMutationBurden;
     }
     
 }

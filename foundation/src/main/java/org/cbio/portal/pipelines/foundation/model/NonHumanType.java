@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -36,32 +36,70 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "NonHumanType", propOrder = {
+    "dnaEvidence",
+    "rnaEvidence"
 })
-public class QualityControlType {
+public class NonHumanType {
+
+    @XmlElement(name = "dna-evidence", required = false)
+    protected DnaEvidenceType dnaEvidence;
+
+    @XmlElement(name = "rna-evidence", required = false)
+    protected RnaEvidenceType rnaEvidence;
     
-    @XmlElement(required = true)
-    protected MetricsType metrics;
+    @XmlAttribute(name = "organism")
+    protected String organism;
     
     @XmlAttribute(name = "status")
     protected String status;
-
+    
+    @XmlAttribute(name = "reads-per-million")
+    protected Integer readsPerMillion;
+    
     /**
-     * @return the metrics
+     * @return the dnaEvidence
      */
-    public MetricsType getMetrics() {
-        return metrics;
+    public DnaEvidenceType getDnaEvidence() {
+        return dnaEvidence;
     }
 
     /**
-     * @param metrics the metrics to set
+     * @param dnaEvidence the dnaEvidence to set
      */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
+    public void setDnaEvidence(DnaEvidenceType dnaEvidence) {
+        this.dnaEvidence = dnaEvidence;
+    }
+
+    /**
+     * @return the rnaEvidence
+     */
+    public RnaEvidenceType getRnaEvidence() {
+        return rnaEvidence;
+    }
+
+    /**
+     * @param rnaEvidence the rnaEvidence to set
+     */
+    public void setRnaEvidence(RnaEvidenceType rnaEvidence) {
+        this.rnaEvidence = rnaEvidence;
+    }
+
+    /**
+     * @return the organism
+     */
+    public String getOrganism() {
+        return organism;
+    }
+
+    /**
+     * @param organism the organism to set
+     */
+    public void setOrganism(String organism) {
+        this.organism = organism;
     }
 
     /**
@@ -77,5 +115,19 @@ public class QualityControlType {
     public void setStatus(String status) {
         this.status = status;
     }
-    
+
+    /**
+     * @return the readsPerMillion
+     */
+    public Integer getReadsPerMillion() {
+        return readsPerMillion;
+    }
+
+    /**
+     * @param readsPerMillion the readsPerMillion to set
+     */
+    public void setReadsPerMillion(Integer readsPerMillion) {
+        this.readsPerMillion = readsPerMillion;
+    }
+        
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -33,19 +33,23 @@
 package org.cbio.portal.pipelines.foundation;
 
 import org.cbio.portal.pipelines.foundation.model.*;
-import org.cbio.portal.pipelines.foundation.util.FoundationUtils;
+import org.cbio.portal.pipelines.foundation.util.*;
 
 import java.util.*;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.*;
 import org.springframework.batch.item.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
  * @author ochoaa
  */
 public class CnaDataReader implements ItemStreamReader<String> {
+    
+    @Autowired
+    GeneDataUtils geneDataUtils;
     
     private List<String> foundationCnaRowData;
     private static final Log LOG = LogFactory.getLog(CnaDataReader.class);
@@ -70,8 +74,16 @@ public class CnaDataReader implements ItemStreamReader<String> {
             List<CopyNumberAlterationType> cnaTypeList = ct.getVariantReport().getCopyNumberAlterations().getCopyNumberAlteration();
             if (cnaTypeList != null) {
                 for (CopyNumberAlterationType cnaType : cnaTypeList) {
-                    cnaMap.put(cnaType.getGene(), ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
-                    geneList.add(cnaType.getGene());
+                    // create cna record for each gene in cna event
+                    List<String> cnaGenes = geneDataUtils.resolveGeneSymbolList(cnaType.getGene().split("/"));
+                    for (String gene : cnaGenes) {
+                        if (geneDataUtils.isNcRNA(gene)) {
+                            LOG.info("Skipping CNA record with ncRNA: " + gene);
+                            continue;
+                        }                        
+                        cnaMap.put(gene, ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
+                        geneList.add(gene);
+                    }
                 }
             }
             else {
@@ -85,8 +97,9 @@ public class CnaDataReader implements ItemStreamReader<String> {
         // format row data for CNA file                
         List<String> cnaRowData = new ArrayList();
         for (String gene : geneList) {            
-            List<String> geneCnaData = new ArrayList();
+            List<String> geneCnaData = new ArrayList();            
             geneCnaData.add(gene);
+            geneCnaData.add(geneDataUtils.resolveEntrezId(gene));
             for (String caseId : fmiCaseTypeMap.keySet()) {
                 if (cnaMap.containsKey(gene, caseId)) {
                     geneCnaData.add((String) cnaMap.get(gene, caseId));

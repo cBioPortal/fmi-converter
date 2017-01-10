@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -44,42 +44,73 @@ import javax.xml.bind.annotation.*;
     "qualityControl",
     "shortVariants",
     "copyNumberAlterations",
-    "rearrangements"
+    "rearrangements",
+    "biomarkers",
+    "nonHumanContent"
 })
 public class VariantReportType {
 
-   @XmlElement(required = true)
-   protected SamplesType samples;
-   
-   @XmlElement(name = "quality-control", required = true)
-   protected QualityControlType qualityControl;
-   
-   @XmlElement(name = "short-variants", required = true)
-   protected ShortVariantsType shortVariants;
-   
-   @XmlElement(name = "copy-number-alterations", required = true)
-    protected CopyNumberAlterationsType copyNumberAlterations;
-   
-   @XmlElement(name = "rearrangements", required = true)
-    protected RearrangementsType rearrangements;
+    @XmlElement(required = true)
+    protected SamplesType samples;
 
+    @XmlElement(name = "quality-control", required = true)
+    protected QualityControlType qualityControl;
+
+    @XmlElement(name = "short-variants", required = true)
+    protected ShortVariantsType shortVariants;
+
+    @XmlElement(name = "copy-number-alterations", required = true)
+    protected CopyNumberAlterationsType copyNumberAlterations;
+
+    @XmlElement(name = "rearrangements", required = true)
+    protected RearrangementsType rearrangements;
+    
+    // to continue supporting previous schema format, 
+    // biomarkers and non-human-content XML elements are not required 
+    @XmlElement(name = "biomarkers", required = true)
+    protected BiomarkersType biomarkers;
+    
+    @XmlElement(name = "non-human-content", required = true)
+    protected NonHumanContentType nonHumanContent;
+
+    @XmlAttribute(name = "disease")
+    protected String disease;    
+    
     @XmlAttribute(name = "disease-ontology")
     protected String diseaseOntology;
     
+    @XmlAttribute(name = "flowcell-analysis")
+    protected Integer flowcellAnalysis;
+
     @XmlAttribute(name = "gender")
     protected String gender;
+
+    @XmlAttribute(name = "pathology-diagnosis")
+    protected String pathologyDiagnosis;
+    
+    @XmlAttribute(name = "percent-tumor-nuclei")
+    protected String percentTumorNuclei;
     
     @XmlAttribute(name = "pipeline-version")
     protected String pipelineVersion;
-   
+
+    @XmlAttribute(name = "purity-assessment")
+    protected String purityAssessment;
+    
+    @XmlAttribute(name = "specimen")
+    protected String specimen;
+    
     @XmlAttribute(name = "study")
     protected String study;
-    
+
     @XmlAttribute(name = "test-request")
     protected String testRequest;
     
-    @XmlAttribute(name = "purity-assessment")
-    protected String purityAssessment;
+    @XmlAttribute(name = "test-type")
+    protected String testType;
+
+    @XmlAttribute(name = "tissue-of-origin")
+    protected String tissueOfOrigin;
 
     /**
      * @return the samples
@@ -152,6 +183,48 @@ public class VariantReportType {
     }
 
     /**
+     * @return the biomarkers
+     */
+    public BiomarkersType getBiomarkers() {
+        return biomarkers;
+    }
+
+    /**
+     * @param biomarkers the biomarkers to set
+     */
+    public void setBiomarkers(BiomarkersType biomarkers) {
+        this.biomarkers = biomarkers;
+    }
+
+    /**
+     * @return the nonHumanContent
+     */
+    public NonHumanContentType getNonHumanContent() {
+        return nonHumanContent;
+    }
+
+    /**
+     * @param nonHumanContent the nonHumanContent to set
+     */
+    public void setNonHumanContent(NonHumanContentType nonHumanContent) {
+        this.nonHumanContent = nonHumanContent;
+    }
+
+    /**
+     * @return the disease
+     */
+    public String getDisease() {
+        return disease;
+    }
+
+    /**
+     * @param disease the disease to set
+     */
+    public void setDisease(String disease) {
+        this.disease = disease;
+    }
+
+    /**
      * @return the diseaseOntology
      */
     public String getDiseaseOntology() {
@@ -163,6 +236,20 @@ public class VariantReportType {
      */
     public void setDiseaseOntology(String diseaseOntology) {
         this.diseaseOntology = diseaseOntology;
+    }
+
+    /**
+     * @return the flowcellAnalysis
+     */
+    public Integer getFlowcellAnalysis() {
+        return flowcellAnalysis;
+    }
+
+    /**
+     * @param flowcellAnalysis the flowcellAnalysis to set
+     */
+    public void setFlowcellAnalysis(Integer flowcellAnalysis) {
+        this.flowcellAnalysis = flowcellAnalysis;
     }
 
     /**
@@ -180,6 +267,34 @@ public class VariantReportType {
     }
 
     /**
+     * @return the pathologyDiagnosis
+     */
+    public String getPathologyDiagnosis() {
+        return pathologyDiagnosis;
+    }
+
+    /**
+     * @param pathologyDiagnosis the pathologyDiagnosis to set
+     */
+    public void setPathologyDiagnosis(String pathologyDiagnosis) {
+        this.pathologyDiagnosis = pathologyDiagnosis;
+    }
+
+    /**
+     * @return the percentTumorNuclei
+     */
+    public String getPercentTumorNuclei() {
+        return percentTumorNuclei;
+    }
+
+    /**
+     * @param percentTumorNuclei the percentTumorNuclei to set
+     */
+    public void setPercentTumorNuclei(String percentTumorNuclei) {
+        this.percentTumorNuclei = percentTumorNuclei;
+    }
+
+    /**
      * @return the pipelineVersion
      */
     public String getPipelineVersion() {
@@ -191,6 +306,34 @@ public class VariantReportType {
      */
     public void setPipelineVersion(String pipelineVersion) {
         this.pipelineVersion = pipelineVersion;
+    }
+
+    /**
+     * @return the purityAssessment
+     */
+    public String getPurityAssessment() {
+        return purityAssessment;
+    }
+
+    /**
+     * @param purityAssessment the purityAssessment to set
+     */
+    public void setPurityAssessment(String purityAssessment) {
+        this.purityAssessment = purityAssessment;
+    }
+
+    /**
+     * @return the specimen
+     */
+    public String getSpecimen() {
+        return specimen;
+    }
+
+    /**
+     * @param specimen the specimen to set
+     */
+    public void setSpecimen(String specimen) {
+        this.specimen = specimen;
     }
 
     /**
@@ -222,17 +365,31 @@ public class VariantReportType {
     }
 
     /**
-     * @return the purityAssessment
+     * @return the testType
      */
-    public String getPurityAssessment() {
-        return purityAssessment;
+    public String getTestType() {
+        return testType;
     }
 
     /**
-     * @param purityAssessment the purityAssessment to set
+     * @param testType the testType to set
      */
-    public void setPurityAssessment(String purityAssessment) {
-        this.purityAssessment = purityAssessment;
+    public void setTestType(String testType) {
+        this.testType = testType;
     }
-    
+
+    /**
+     * @return the tissueOfOrigin
+     */
+    public String getTissueOfOrigin() {
+        return tissueOfOrigin;
+    }
+
+    /**
+     * @param tissueOfOrigin the tissueOfOrigin to set
+     */
+    public void setTissueOfOrigin(String tissueOfOrigin) {
+        this.tissueOfOrigin = tissueOfOrigin;
+    }
+
 }

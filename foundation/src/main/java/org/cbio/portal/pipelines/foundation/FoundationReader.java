@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -37,12 +37,16 @@ import org.cbio.portal.pipelines.foundation.model.CaseType;
 import java.util.*;
 import org.apache.commons.logging.*;
 import org.springframework.batch.item.*;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  *
  * @author ochoaa
  */
 public class FoundationReader implements ItemStreamReader<CaseType> {
+    
+    @Value("#{stepExecutionContext['fmiCaseList']}")
+    private List<CaseType> fmiCaseList;
     
     private List<CaseType> foundationCaseList = new ArrayList();
     
@@ -51,13 +55,12 @@ public class FoundationReader implements ItemStreamReader<CaseType> {
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {           
        
-        // retrieve list of foundation cases from execution context
-        List<CaseType> foundationCaseListExecution = (List<CaseType>) executionContext.get("fmiCaseList");
-        if (foundationCaseListExecution.isEmpty() || foundationCaseListExecution == null) {
+        // check list of foundation cases from execution context
+        if (fmiCaseList.isEmpty() || fmiCaseList == null) {
             LOG.error("Error retrieving Foundation case list from execution context.");
         }
         else {
-            this.foundationCaseList = new ArrayList(foundationCaseListExecution);
+            this.foundationCaseList = new ArrayList(fmiCaseList);
         }
     }
         

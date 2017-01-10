@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -35,6 +35,7 @@ package org.cbio.portal.pipelines.foundation.model.staging;
 import org.cbio.portal.pipelines.foundation.model.*;
 
 import java.util.*;
+import org.cbio.portal.pipelines.foundation.util.FoundationUtils;
 
 /**
  * Class for converting CaseType to ClinicalData
@@ -53,6 +54,13 @@ public class ClinicalData /*extends DataClinicalModel*/ {
     private String diseaseOntology;
     private String purityAssessment;
     private String genePanel;
+    private String diseaseClassification;
+    private String flowcellAnalysis;
+    private String officialPath;
+    private String specimen;
+    private String platform;
+    private String tumorTissueSite;
+    private Map<String, String> additionalProperties;
 
     public ClinicalData(){}
     
@@ -62,17 +70,17 @@ public class ClinicalData /*extends DataClinicalModel*/ {
         this.studyId = caseType.getFmiCase();
         this.pipelineVersion = caseType.getVariantReport().getPipelineVersion();
         
-        this.tumorNucleiPercent = "";
+        // resolve tumor nuclei percent        
+        this.tumorNucleiPercent = FoundationUtils.resolveTumorNucleiPercent(caseType);
+        
+        // resolve values for median coverage, x100 coverage, and error percent
         this.medianCoverage = "";
         this.x100Cov = "";
         this.errorPercent = "";
         try {
             List<MetricType> metricData = caseType.getVariantReport().getQualityControl().getMetrics().getMetric();
             for (MetricType m : metricData) {
-                if (m.getName().equals("Tumor Nuclei Percent") && this.tumorNucleiPercent.isEmpty()) {
-                    this.tumorNucleiPercent = m.getValue();
-                }
-                else if (m.getName().equals("Median coverage") && this.medianCoverage.isEmpty()) {
+                if (m.getName().equals("Median coverage") && this.medianCoverage.isEmpty()) {
                     this.medianCoverage = m.getValue();
                 }
                 else if (m.getName().equals("Coverage >100X") && this.x100Cov.isEmpty()) {
@@ -85,6 +93,14 @@ public class ClinicalData /*extends DataClinicalModel*/ {
         }
         catch (NullPointerException ex) {}
 
+        // set additional properties from non-human content data
+        Map<String, String> nonHumanContentData = new HashMap<>();
+        for (NonHumanType nht : caseType.getVariantReport().getNonHumanContent().getNonHuman()) {
+            nonHumanContentData.put(nht.getOrganism(), nht.getStatus());
+        }
+        this.additionalProperties = nonHumanContentData;
+        
+        // set remaining fields
         this.diseaseOntology = caseType.getVariantReport().getDiseaseOntology()!=null?
                 caseType.getVariantReport().getDiseaseOntology():"";
         this.gender = caseType.getVariantReport().getGender()!=null?
@@ -93,6 +109,18 @@ public class ClinicalData /*extends DataClinicalModel*/ {
                 caseType.getVariantReport().getPurityAssessment():"";
         this.genePanel = caseType.getVariantReport().getStudy()!=null?
                 caseType.getVariantReport().getStudy():"";
+        this.diseaseClassification = caseType.getVariantReport().getDisease()!=null?
+                caseType.getVariantReport().getDisease():"";
+        this.flowcellAnalysis = caseType.getVariantReport().getFlowcellAnalysis()!=null?
+                String.valueOf(caseType.getVariantReport().getFlowcellAnalysis()):"";
+        this.officialPath = caseType.getVariantReport().getPathologyDiagnosis()!=null?
+                caseType.getVariantReport().getPathologyDiagnosis():"";
+        this.specimen = caseType.getVariantReport().getSpecimen()!=null?
+                caseType.getVariantReport().getSpecimen():"";
+        this.platform = caseType.getVariantReport().getTestType()!=null?
+                caseType.getVariantReport().getTestType():"";
+        this.tumorTissueSite = caseType.getVariantReport().getTissueOfOrigin()!=null?
+                caseType.getVariantReport().getTissueOfOrigin():"";
     }
     
     /** 
@@ -246,6 +274,104 @@ public class ClinicalData /*extends DataClinicalModel*/ {
     public void setErrorPercent(String errorPercent) {
         this.errorPercent = errorPercent;
     }
+    
+    /**
+     * @return the diseaseClassification
+     */
+    public String getDiseaseClassification() {
+        return diseaseClassification;
+    }
+
+    /**
+     * @param diseaseClassification the diseaseClassification to set
+     */
+    public void setDiseaseClassification(String diseaseClassification) {
+        this.diseaseClassification = diseaseClassification;
+    }
+
+    /**
+     * @return the flowcellAnalysis
+     */
+    public String getFlowcellAnalysis() {
+        return flowcellAnalysis;
+    }
+
+    /**
+     * @param flowcellAnalysis the flowcellAnalysis to set
+     */
+    public void setFlowcellAnalysis(String flowcellAnalysis) {
+        this.flowcellAnalysis = flowcellAnalysis;
+    }
+
+    /**
+     * @return the officialPath
+     */
+    public String getOfficialPath() {
+        return officialPath;
+    }
+
+    /**
+     * @param officialPath the officialPath to set
+     */
+    public void setOfficialPath(String officialPath) {
+        this.officialPath = officialPath;
+    }
+
+    /**
+     * @return the specimen
+     */
+    public String getSpecimen() {
+        return specimen;
+    }
+
+    /**
+     * @param specimen the specimen to set
+     */
+    public void setSpecimen(String specimen) {
+        this.specimen = specimen;
+    }
+
+    /**
+     * @return the platform
+     */
+    public String getPlatform() {
+        return platform;
+    }
+
+    /**
+     * @param platform the platform to set
+     */
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    /**
+     * @return the tumorTissueSite
+     */
+    public String getTumorTissueSite() {
+        return tumorTissueSite;
+    }
+
+    /**
+     * @param tumorTissueSite the tumorTissueSite to set
+     */
+    public void setTumorTissueSite(String tumorTissueSite) {
+        this.tumorTissueSite = tumorTissueSite;
+    }
+
+    /**
+     * @return the additionalProperties
+     */
+    public Map<String, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+    /**
+     * @param additionalProperties the additionalProperties to set
+     */
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
 
     /**
      * Returns a map linking the staging file column name to the appropriate getter method.
@@ -265,6 +391,12 @@ public class ClinicalData /*extends DataClinicalModel*/ {
         map.put("DISEASE_ONTOLOGY","getDiseaseOntology");
         map.put("PURITY_ASSESSMENT","getPurityAssessment");
         map.put("GENE_PANEL","getGenePanel");
+        map.put("DISEASE_CLASSIFICATION", "getDiseaseClassification");
+        map.put("FLOWCELL_ANALYSIS", "getFlowcellAnalysis");
+        map.put("OFFICIAL_PATH", "getOfficialPath");
+        map.put("SPECIMEN", "getSpecimen");
+        map.put("PLATFORM", "getPlatform");
+        map.put("TUMOR_TISSUE_SITE", "getTumorTissueSite");
 
         return map;
     }        
