@@ -311,8 +311,17 @@ public class FoundationUtils {
      * @param rearrangement
      * @return FusionData
      */
-    public static FusionData getOtherGeneFusionEvent(String sampleId, RearrangementType rearrangement) {
+    public static FusionData getOtherGeneFusionEvent(String sampleId, RearrangementType rearrangement, String fusionEvent) {
+        // return null if other gene is empty, intergenic, or contains '/'
+        if (Strings.isNullOrEmpty(rearrangement.getOtherGene()) || 
+                NULL_EMPTY_VALUES.contains(rearrangement.getOtherGene()) || 
+                rearrangement.getOtherGene().equals(rearrangement.getTargetedGene()) || 
+                rearrangement.getOtherGene().contains("intergenic") || 
+                rearrangement.getOtherGene().contains("/")) {
+            return null;
+        }
         
+        // switch the targeted gene and other gene values
         String[] targetedGeneParts = rearrangement.getTargetedGene().split("-");
         String newOtherGene = targetedGeneParts[0];
         String newTargetedGene = rearrangement.getOtherGene();
@@ -322,7 +331,11 @@ public class FoundationUtils {
         rearrangement.setTargetedGene(newTargetedGene);
         rearrangement.setOtherGene(newOtherGene);
         
-        return new FusionData(sampleId, rearrangement);
+        // create FusionData instance with switched targeted/other gene and given fusion event 
+        FusionData fdSwitched = new FusionData(sampleId, rearrangement);
+        fdSwitched.setFusion(fusionEvent);
+        
+        return fdSwitched;
     }
 
     /**
@@ -361,5 +374,38 @@ public class FoundationUtils {
                 return "0";
         }
     }
-
+    
+    /**
+     * Resolves gene symbol for other gene in rearrangement type record.
+     * @param targetedGene
+     * @param otherGene
+     * @return 
+     */
+    public static String resolveOtherGene(String targetedGene, String otherGene) {        
+        if (Strings.isNullOrEmpty(otherGene) || NULL_EMPTY_VALUES.contains(otherGene)) {
+            return otherGene;
+        }
+        
+        // resolve value of other gene in '/'- and ';'-delimited gene symbol lists
+        if (otherGene.contains("/") && !otherGene.contains("intergenic")) {
+            // '/'-delimited lists sometimes contain the targeted gene symbol
+            // return the first gene symbol in this list not matching the targeted gene
+            String[] genes = otherGene.split("/");
+            for (String gene : genes) {
+                // set gene symbol only if doesn't match targeted gene
+                if (!gene.equals(targetedGene)){
+                    return gene;
+                }
+            }
+        }
+        else if (otherGene.contains(";")) {
+            // ';'-delimited lists contain genes that are overlapping on the genome
+            // return the first gene symbol in this list
+            String[] genes = otherGene.split(";");
+            return genes[0];
+        }
+        
+        return otherGene;
+    }
+    
 }
