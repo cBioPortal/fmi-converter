@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -38,7 +38,6 @@ import java.io.*;
 import java.util.*;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.*;
 
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.*;
@@ -54,8 +53,6 @@ public class FusionDataWriter implements ItemStreamWriter <CompositeResultBean> 
     
    @Value("#{jobParameters[outputDirectory]}")
     private String outputDirectory; 
-
-    private static final Log LOG = LogFactory.getLog(FusionDataWriter.class);   
 
     private final List<String> writeList = new ArrayList<>();
     private final FlatFileItemWriter<String> flatFileItemWriter = new FlatFileItemWriter<>();
@@ -89,16 +86,14 @@ public class FusionDataWriter implements ItemStreamWriter <CompositeResultBean> 
     public void update(ExecutionContext executionContext) throws ItemStreamException {}
 
     @Override
-    public void close() throws ItemStreamException
-    {
+    public void close() throws ItemStreamException {
         flatFileItemWriter.close();
     }
 
     @Override
-    public void write(List<? extends CompositeResultBean> items) throws Exception
-    {
+    public void write(List<? extends CompositeResultBean> items) throws Exception {
         writeList.clear();
-        List<String> writeList = new ArrayList<String>();
+        List<String> writeList = new ArrayList<>();
         for (CompositeResultBean resultList : items) {
             for (String result : resultList.getFusionDataResult().split("\n")) {
                 if (!Strings.isNullOrEmpty(result)) {

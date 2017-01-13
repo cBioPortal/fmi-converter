@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -36,46 +36,29 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "DnaEvidenceType", propOrder = {
+    "sampleEvidence"
 })
-public class QualityControlType {
+public class DnaEvidenceType {
     
-    @XmlElement(required = true)
-    protected MetricsType metrics;
-    
-    @XmlAttribute(name = "status")
-    protected String status;
+    @XmlAttribute(name = "sample")
+    protected String sampleEvidence;
 
     /**
-     * @return the metrics
+     * @return the sampleEvidence
      */
-    public MetricsType getMetrics() {
-        return metrics;
+    public String getSampleEvidence() {
+        return sampleEvidence;
     }
 
     /**
-     * @param metrics the metrics to set
+     * @param sampleEvidence the sampleEvidence to set
      */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
+    public void setSampleEvidence(String sampleEvidence) {
+        this.sampleEvidence = sampleEvidence;
     }
-
-    /**
-     * @return the status
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
+        
 }

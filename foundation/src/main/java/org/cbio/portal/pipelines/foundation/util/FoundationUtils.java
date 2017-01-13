@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -406,6 +406,35 @@ public class FoundationUtils {
         }
         
         return otherGene;
+    }
+    
+    /**
+     * Resolves the tumor nuclei percent given an instance of CaseType.
+     * @param caseType
+     * @return 
+     */
+    public static String resolveTumorNucleiPercent(CaseType caseType) {
+        String tumorNucleiPercent = "";
+        
+        // resolve the value for tumor nuclei percent 
+        if (!Strings.isNullOrEmpty(caseType.getVariantReport().getPercentTumorNuclei()) && 
+                !NULL_EMPTY_VALUES.contains(caseType.getVariantReport().getPercentTumorNuclei())) {
+            tumorNucleiPercent = caseType.getVariantReport().getPercentTumorNuclei();
+        }
+        else if (caseType.getVariantReport().getSamples().getSample().getPercentTumorNuclei() != null) {
+            tumorNucleiPercent = String.valueOf(caseType.getVariantReport().getSamples().getSample().getPercentTumorNuclei());
+        }
+        else if (caseType.getVariantReport().getQualityControl().getMetrics() != null) {
+            List<MetricType> metricData = caseType.getVariantReport().getQualityControl().getMetrics().getMetric();
+            for (MetricType m : metricData) {
+                if (m.getName().equals("Tumor Nuclei Percent")) {
+                    tumorNucleiPercent = m.getValue();
+                    break;
+                }
+            }
+        }
+        
+        return tumorNucleiPercent;
     }
     
 }

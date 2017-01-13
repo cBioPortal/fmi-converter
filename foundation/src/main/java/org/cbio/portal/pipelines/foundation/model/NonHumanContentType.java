@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -32,50 +32,50 @@
 
 package org.cbio.portal.pipelines.foundation.model;
 
+import java.util.*;
 import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "NonHumanContentType", propOrder = {
+    "nonHuman"
 })
-public class QualityControlType {
+public class NonHumanContentType {
     
-    @XmlElement(required = true)
-    protected MetricsType metrics;
-    
-    @XmlAttribute(name = "status")
-    protected String status;
+    @XmlElement(name = "non-human", required = false)
+    protected List<NonHumanType> nonHuman;
 
     /**
-     * @return the metrics
+     * @return the nonHuman
      */
-    public MetricsType getMetrics() {
-        return metrics;
+    public List<NonHumanType> getNonHuman() {
+        if (nonHuman == null) {
+            nonHuman = new ArrayList();
+        }
+        return nonHuman;
     }
 
     /**
-     * @param metrics the metrics to set
+     * @param nonHuman the nonHuman to set
      */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
-    }
-
-    /**
-     * @return the status
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(String status) {
-        this.status = status;
+    public void setNonHuman(List<NonHumanType> nonHuman) {
+        this.nonHuman = nonHuman;
     }
     
+    /**
+     * Returns HashMap of non-human content data.
+     * @return 
+     */
+    public Map<String, String> getNonHumanContentData() {
+        Map<String, String> nonHumanContentData = new HashMap<>();
+        for (NonHumanType nht : nonHuman) {
+            nonHumanContentData.put(nht.getOrganism(), nht.getStatus());            
+        }
+        
+        return nonHumanContentData;
+    }
+
 }

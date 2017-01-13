@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -37,6 +37,7 @@ import org.cbio.portal.pipelines.foundation.model.CaseType;
 import java.io.*;
 import java.util.*;
 import org.apache.commons.lang.StringUtils;
+
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.*;
 import org.springframework.batch.item.file.transform.PassThroughLineAggregator;
@@ -85,19 +86,18 @@ public class CnaDataWriter implements ItemStreamWriter<String> {
     public void update(ExecutionContext executionContext) throws ItemStreamException {}
 
     @Override
-    public void close() throws ItemStreamException
-    {
+    public void close() throws ItemStreamException {
         flatFileItemWriter.close();
     }
 
     @Override
-    public void write(List<? extends String> items) throws Exception
-    {
+    public void write(List<? extends String> items) throws Exception {
         writeList.clear();
-        List<String> writeList = new ArrayList<String>();
+        List<String> writeList = new ArrayList<>();
         for (String result : items) {
             writeList.add(result);            
         }
+        
         flatFileItemWriter.write(writeList);
     }    
 

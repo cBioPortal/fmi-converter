@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -36,46 +36,29 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "ResultsPayloadType", propOrder = {
+    "variantReport",
 })
-public class QualityControlType {
+public class ResultsPayloadType {        
     
-    @XmlElement(required = true)
-    protected MetricsType metrics;
-    
-    @XmlAttribute(name = "status")
-    protected String status;
+    @XmlElement(name = "variant-report", required = true)
+    protected VariantReportType variantReport;
 
     /**
-     * @return the metrics
+     * @return the variantReport
      */
-    public MetricsType getMetrics() {
-        return metrics;
+    public VariantReportType getVariantReport() {
+        return variantReport;
     }
 
     /**
-     * @param metrics the metrics to set
+     * @param variantReport the variantReport to set
      */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
-    }
-
-    /**
-     * @return the status
-     */
-    public String getStatus() {
-        return status;
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(String status) {
-        this.status = status;
+    public void setVariantReport(VariantReportType variantReport) {
+        this.variantReport = variantReport;
     }
     
 }
