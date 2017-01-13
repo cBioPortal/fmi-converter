@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -40,43 +40,55 @@ import javax.xml.bind.annotation.*;
  *
  * @author Prithi Chakrapani, ochoaa
  */
- @XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SampleType", propOrder = {
     "comment", 
     "content",
     "baitSet",
     "meanExonDepth",
+    "nucleicAcid",
     "percentTumorNuclei"        
 })
 public class SampleType {
     
-   @XmlElement(name = "comment", required = false)
-   protected String comment;
-   
-   @XmlMixed
-   protected List<Serializable> content;
-   
-   @XmlAttribute(name = "bait-set")
-   protected String baitSet;
-   
-   @XmlAttribute(name = "mean-exon-depth")
-   protected Float meanExonDepth;
-   
-   @XmlAttribute(name = "name" )
-   protected String name;
-   
-   @XmlAttribute(name = "percent-tumor-nuclei")
-   protected Integer percentTumorNuclei;
+    @XmlElement(name = "comment", required = false)
+    protected String comment;
+
+    @XmlMixed
+    protected List<Serializable> content;
+
+    @XmlAttribute(name = "bait-set")
+    protected String baitSet;
+
+    @XmlAttribute(name = "mean-exon-depth")
+    protected Float meanExonDepth;
+
+    @XmlAttribute(name = "name" )
+    protected String name;
+    
+    @XmlAttribute(name = "nucleic-acid-type")
+    protected String nucleicAcid;
+    
+    // this field will be kept to allow processing of data in older schema format
+    @XmlAttribute(name = "percent-tumor-nuclei")
+    protected Integer percentTumorNuclei;
    
     /**
      * @return the content
      */
     public List<Serializable> getContent() {
         if (content == null) {
-            content = new ArrayList<Serializable>();
+            content = new ArrayList<>();
         }
         return this.content;
-    }   
+    }    
+    
+    /**
+     * @param content the content to set
+     */
+    public void setContent(List<Serializable> content) {
+        this.content = content;
+    }
 
     /**
      * @return the baitSet
@@ -120,6 +132,20 @@ public class SampleType {
         this.name = name;
     }
 
+    /**
+     * @return the nucleicAcid
+     */
+    public String getNucleicAcid() {
+        return nucleicAcid;
+    }
+
+    /**
+     * @param nucleicAcid the nucleicAcid to set
+     */
+    public void setNucleicAcid(String nucleicAcid) {
+        this.nucleicAcid = nucleicAcid;
+    }
+    
     /**
      * @return the percentTumorNuclei
      */

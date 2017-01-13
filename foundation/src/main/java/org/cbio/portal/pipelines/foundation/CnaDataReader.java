@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -70,8 +70,17 @@ public class CnaDataReader implements ItemStreamReader<String> {
             List<CopyNumberAlterationType> cnaTypeList = ct.getVariantReport().getCopyNumberAlterations().getCopyNumberAlteration();
             if (cnaTypeList != null) {
                 for (CopyNumberAlterationType cnaType : cnaTypeList) {
-                    cnaMap.put(cnaType.getGene(), ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
-                    geneList.add(cnaType.getGene());
+                    // if gene symbol is 'CDKN2A/B' then create two records for CNA map, one for each gene
+                    if ( cnaType.getGene().equals("CDKN2A/B")) {
+                        cnaMap.put("CDKN2A", ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
+                        cnaMap.put("CDKN2B", ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
+                        geneList.add("CDKN2A");
+                        geneList.add("CDKN2B");
+                    }
+                    else {
+                        cnaMap.put(cnaType.getGene(), ct.getCase(), FoundationUtils.resolveCnaType(cnaType));
+                        geneList.add(cnaType.getGene());
+                    }
                 }
             }
             else {

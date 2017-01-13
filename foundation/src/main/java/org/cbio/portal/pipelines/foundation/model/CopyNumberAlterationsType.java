@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.*;
 public class CopyNumberAlterationsType {
 
     @XmlElement(name = "copy-number-alteration", required = false)
-    private List<CopyNumberAlterationType> copyNumberAlteration;
+    protected List<CopyNumberAlterationType> copyNumberAlteration;
 
     /**
      * @return the copyNumberAlteration
