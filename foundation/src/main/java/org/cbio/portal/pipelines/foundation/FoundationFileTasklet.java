@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -38,7 +38,7 @@ import java.io.*;
 import java.util.*;
 import javax.xml.bind.*;
 import javax.xml.parsers.*;
-import org.w3c.dom.Document;
+import org.w3c.dom.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 import org.apache.commons.logging.*;
@@ -64,6 +64,7 @@ public class FoundationFileTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContext, ChunkContext chunkContext) throws Exception {        
         Map<String, CaseType> fmiCaseTypeMap = new LinkedHashMap<>();
+        Set<String> nonHumanContentColumns = new LinkedHashSet();
         
         // get list of xml files sorted by date and put data into map
         File[] sourceXmlFiles = getDateSortedFiles(new File(sourceDir));
@@ -84,13 +85,27 @@ public class FoundationFileTasklet implements Tasklet {
                 if (fmiCaseTypeMap.containsKey(ct.getCase())) {
                     LOG.warn("Sample found in more than one file. Using current file to update data for sample: " + ct.getCase());
                 }
+                // if non-human content list is not empty then add to map of normalized
+                // column names to external column name
+                if (!ct.getVariantReport().getNonHumanContent().getNonHuman().isEmpty()) {
+                    for (NonHumanType nht : ct.getVariantReport().getNonHumanContent().getNonHuman()) {
+                        nonHumanContentColumns.add(nht.getOrganism());
+                    }
+                }                
                 fmiCaseTypeMap.put(ct.getCase(), ct);
             }
-        }
-        
+        }        
         // add list of cases to the execution context
         LOG.info("Adding " + fmiCaseTypeMap.size() + " cases to execution context.");
         chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().put("fmiCaseTypeMap", fmiCaseTypeMap);
+        
+        // log if any non-human content data was found and add flag to execution context
+        if (!nonHumanContentColumns.isEmpty()) {
+            LOG.info("Non-Human Content data found in source XMLS: " + nonHumanContentColumns.size());            
+        }
+        chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().put("addNonHumanContentData", !nonHumanContentColumns.isEmpty());
+        chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().put("nonHumanContentColumns", new ArrayList(nonHumanContentColumns));
+        
         return RepeatStatus.FINISHED;
     }
     
@@ -106,9 +121,9 @@ public class FoundationFileTasklet implements Tasklet {
     private List<CaseType> extractFileCaseData(File xmlFile) throws JAXBException, IOException, ParserConfigurationException, SAXException {
         List<CaseType> newCases = new ArrayList();
 
-        // get the document root and determine how to unmarshal document
+        // get the document root and determine how to unmarshal document  
         Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
-        Element root = document.getDocumentElement();                
+        Element root = document.getDocumentElement();        
         if (root.getNodeName().equals("ClientCaseInfo")) {
             // unmarshal document with root tag = ClientCaseInfo
             JAXBContext context = JAXBContext.newInstance(ClientCaseInfoType.class);                
@@ -121,12 +136,20 @@ public class FoundationFileTasklet implements Tasklet {
             JAXBContext context = JAXBContext.newInstance(ResultsReportType.class);
             Unmarshaller jaxbUnmarshaller = context.createUnmarshaller();
             ResultsReportType rrt = (ResultsReportType) jaxbUnmarshaller.unmarshal(root);
-            newCases.add(new CaseType(rrt.getVariantReport()));
+
+            // Foundation schema 2.0 nests variant-report within ResultsPayload
+            // root is still the same
+            try {
+                newCases.add(new CaseType(rrt.getVariantReport()));
+            }
+            catch (NullPointerException ex) {
+                newCases.add(new CaseType(rrt.getResultsPayload().getVariantReport()));
+            }            
         }
 
         return newCases;
     }
-    
+
     /**
      * Return a list of xml files sorted by date (oldest-newest).
      * Source XML filenames are expected to be date-controlled by <filename>_<date of transfer>.xml

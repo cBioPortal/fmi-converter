@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -36,33 +36,16 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "MicrosatelliteInstabilityType", propOrder = {
+    "status"
 })
-public class QualityControlType {
+public class MicrosatelliteInstabilityType {
     
     @XmlElement(required = true)
-    protected MetricsType metrics;
-    
-    @XmlAttribute(name = "status")
-    protected String status;
-
-    /**
-     * @return the metrics
-     */
-    public MetricsType getMetrics() {
-        return metrics;
-    }
-
-    /**
-     * @param metrics the metrics to set
-     */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
-    }
+    protected String status; 
 
     /**
      * @return the status

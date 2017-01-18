@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -50,16 +50,15 @@ public class FusionDataProcessor implements ItemProcessor<CaseType, String>{
     public String process(final CaseType caseType) throws Exception {
         List<String> fusionRecords = new ArrayList();
         for (RearrangementType re : caseType.getVariantReport().getRearrangements().getRearrangement()) {
+            // resolve value of other gene for rearrangement type record before converting record
+            re.setOtherGene(FoundationUtils.resolveOtherGene(re.getTargetedGene(), re.getOtherGene()));
+            
             FusionData fd = new FusionData(caseType.getCase(), re);
             fusionRecords.add(transformRecord(fd));
             
-            // switch the targeted gene and other gene if other gene not empty and if 
-            // other gene does not contain intergenic or '/'
-            if (!FoundationUtils.NULL_EMPTY_VALUES.contains(re.getOtherGene()) 
-                    && !re.getOtherGene().equals(re.getTargetedGene()) && 
-                    !re.getOtherGene().contains("intergenic") && !re.getOtherGene().contains("/")) {
-                FusionData fdSwitched = FoundationUtils.getOtherGeneFusionEvent(caseType.getCase(), re);
-                fdSwitched.setFusion(fd.getFusion());
+            // if switched fusion event returned is not null then transform record
+            FusionData fdSwitched = FoundationUtils.getOtherGeneFusionEvent(caseType.getCase(), re, fd.getFusion());
+            if (fdSwitched != null) {
                 fusionRecords.add(transformRecord(fdSwitched));
             }
         }
