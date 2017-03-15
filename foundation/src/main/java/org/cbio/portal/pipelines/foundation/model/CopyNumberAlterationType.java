@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -40,15 +40,23 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CopyNumberAlterationType", propOrder = {
-    "value"
+    "dnaEvidence",
+    "rnaEvidence"
 })
 public class CopyNumberAlterationType {
-    @XmlValue
-    protected String value;
+    
+    @XmlElement(name = "dna-evidence", required = false)
+    protected DnaEvidenceType dnaEvidence;
+
+    @XmlElement(name = "rna-evidence", required = false)
+    protected RnaEvidenceType rnaEvidence;
    
     @XmlAttribute(name = "copy-number")
     protected Byte copyNumber;
    
+    @XmlAttribute(name = "equivocal")
+    protected boolean equivocal;
+    
     @XmlAttribute(name = "gene")
     protected String gene;
    
@@ -68,19 +76,33 @@ public class CopyNumberAlterationType {
     protected String type;
 
     /**
-     * @return the value
+     * @return the dnaEvidence
      */
-    public String getValue() {
-        return value;
+    public DnaEvidenceType getDnaEvidence() {
+        return dnaEvidence;
     }
 
     /**
-     * @param value the value to set
+     * @param dnaEvidence the dnaEvidence to set
      */
-    public void setValue(String value) {
-        this.value = value;
+    public void setDnaEvidence(DnaEvidenceType dnaEvidence) {
+        this.dnaEvidence = dnaEvidence;
     }
 
+    /**
+     * @return the rnaEvidence
+     */
+    public RnaEvidenceType getRnaEvidence() {
+        return rnaEvidence;
+    }
+
+    /**
+     * @param rnaEvidence the rnaEvidence to set
+     */
+    public void setRnaEvidence(RnaEvidenceType rnaEvidence) {
+        this.rnaEvidence = rnaEvidence;
+    }
+    
     /**
      * @return the copyNumber
      */
@@ -95,6 +117,20 @@ public class CopyNumberAlterationType {
         this.copyNumber = copyNumber;
     }
 
+    /**
+     * @return the equivocal
+     */
+    public boolean isEquivocal() {
+        return equivocal;
+    }
+
+    /**
+     * @param equivocal the equivocal to set
+     */
+    public void setEquivocal(boolean equivocal) {
+        this.equivocal = equivocal;
+    }
+    
     /**
      * @return the gene
      */

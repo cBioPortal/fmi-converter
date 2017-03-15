@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2017 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -36,34 +36,23 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author Prithi Chakrapani, ochoaa
+ * @author ochoaa
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QualityControlType", propOrder = { 
-    "metrics" 
+@XmlType(name = "TumorMutationBurdenType", propOrder = {
+    "status"
 })
-public class QualityControlType {
+public class TumorMutationBurdenType {
     
     @XmlElement(required = true)
-    protected MetricsType metrics;
+    protected String status; 
+
+    @XmlAttribute(name = "score")
+    protected Float score;
     
-    @XmlAttribute(name = "status")
-    protected String status;
-
-    /**
-     * @return the metrics
-     */
-    public MetricsType getMetrics() {
-        return metrics;
-    }
-
-    /**
-     * @param metrics the metrics to set
-     */
-    public void setMetrics(MetricsType metrics) {
-        this.metrics = metrics;
-    }
-
+    @XmlAttribute(name = "unit")
+    protected String unit;
+    
     /**
      * @return the status
      */
@@ -76,6 +65,34 @@ public class QualityControlType {
      */
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    /**
+     * @return the score
+     */
+    public Float getScore() {
+        return score;
+    }
+
+    /**
+     * @param score the score to set
+     */
+    public void setScore(Float score) {
+        this.score = score;
+    }
+
+    /**
+     * @return the unit
+     */
+    public String getUnit() {
+        return unit;
+    }
+
+    /**
+     * @param unit the unit to set
+     */
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
     
 }

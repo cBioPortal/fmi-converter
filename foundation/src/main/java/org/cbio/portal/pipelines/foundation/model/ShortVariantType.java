@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -39,18 +39,28 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ShortVariantType", propOrder = { 
-    "value"
+    "dnaEvidence",
+    "rnaEvidence"
 })
 public class ShortVariantType {
+    
+    @XmlElement(name = "dna-evidence", required = false)
+    protected DnaEvidenceType dnaEvidence;
 
-    @XmlValue
-    protected String value;
+    @XmlElement(name = "rna-evidence", required = false)
+    protected RnaEvidenceType rnaEvidence;
+    
+    @XmlAttribute(name = "allele-fraction")
+    protected Float alleleFraction;
     
     @XmlAttribute(name = "cds-effect")
     protected String cdsEffect;
     
     @XmlAttribute(name = "depth")
-    protected Short depth; 
+    protected Short depth;
+    
+    @XmlAttribute(name = "equivocal")
+    protected boolean equivocal;
     
     @XmlAttribute(name = "functional-effect")
     protected String functionalEffect;
@@ -77,19 +87,47 @@ public class ShortVariantType {
     protected String transcript;        
 
     /**
-     * @return the value
+     * @return the dnaEvidence
      */
-    public String getValue() {
-        return value;
+    public DnaEvidenceType getDnaEvidence() {
+        return dnaEvidence;
     }
 
     /**
-     * @param value the value to set
+     * @param dnaEvidence the dnaEvidence to set
      */
-    public void setValue(String value) {
-        this.value = value;
+    public void setDnaEvidence(DnaEvidenceType dnaEvidence) {
+        this.dnaEvidence = dnaEvidence;
     }
 
+    /**
+     * @return the rnaEvidence
+     */
+    public RnaEvidenceType getRnaEvidence() {
+        return rnaEvidence;
+    }
+
+    /**
+     * @param rnaEvidence the rnaEvidence to set
+     */
+    public void setRnaEvidence(RnaEvidenceType rnaEvidence) {
+        this.rnaEvidence = rnaEvidence;
+    }    
+
+    /**
+     * @return the alleleFraction
+     */
+    public Float getAlleleFraction() {
+        return alleleFraction;
+    }
+
+    /**
+     * @param alleleFraction the alleleFraction to set
+     */
+    public void setAlleleFraction(Float alleleFraction) {
+        this.alleleFraction = alleleFraction;
+    }
+    
     /**
      * @return the cdsEffect
      */
@@ -116,6 +154,20 @@ public class ShortVariantType {
      */
     public void setDepth(Short depth) {
         this.depth = depth;
+    }
+
+    /**
+     * @return the equivocal
+     */
+    public boolean isEquivocal() {
+        return equivocal;
+    }
+
+    /**
+     * @param equivocal the equivocal to set
+     */
+    public void setEquivocal(boolean equivocal) {
+        this.equivocal = equivocal;
     }
 
     /**

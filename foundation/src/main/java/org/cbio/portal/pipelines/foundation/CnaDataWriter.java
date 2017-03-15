@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -37,6 +37,7 @@ import org.cbio.portal.pipelines.foundation.model.CaseType;
 import java.io.*;
 import java.util.*;
 import org.apache.commons.lang.StringUtils;
+
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.*;
 import org.springframework.batch.item.file.transform.PassThroughLineAggregator;
@@ -51,16 +52,16 @@ public class CnaDataWriter implements ItemStreamWriter<String> {
 
     @Value("#{jobParameters[outputDirectory]}")
     private String outputDirectory;
+    
+    @Value("#{stepExecutionContext['fmiCaseTypeMap']}")
+    private Map<String, CaseType> fmiCaseTypeMap;
 
     private final List<String> writeList = new ArrayList<>();
-    private final FlatFileItemWriter<String> flatFileItemWriter = new FlatFileItemWriter<>();            
+    private final FlatFileItemWriter<String> flatFileItemWriter = new FlatFileItemWriter<>();
     
     @Override
-    public void open(ExecutionContext executionContext) throws ItemStreamException {                
-        // retrieve list of foundation cases from execution context
-        final Map<String, CaseType> fmiCaseTypeMap = (Map<String, CaseType>) executionContext.get("fmiCaseTypeMap");
-                
-        String stagingFile = outputDirectory +  "data_CNA.txt" ;
+    public void open(ExecutionContext executionContext) throws ItemStreamException {
+        File stagingFile = new File(outputDirectory, "data_CNA.txt");
         PassThroughLineAggregator aggr = new PassThroughLineAggregator();
         flatFileItemWriter.setLineAggregator(aggr);
         flatFileItemWriter.setHeaderCallback(new FlatFileHeaderCallback() {
@@ -76,6 +77,7 @@ public class CnaDataWriter implements ItemStreamWriter<String> {
     private String getHeader(Set<String> fmiCaseList) {
         List<String> header = new ArrayList();
         header.add("Hugo_Symbol");
+        header.add("Entrez_Gene_Id");
         header.addAll(fmiCaseList);
         
         return StringUtils.join(header, "\t");
@@ -85,19 +87,18 @@ public class CnaDataWriter implements ItemStreamWriter<String> {
     public void update(ExecutionContext executionContext) throws ItemStreamException {}
 
     @Override
-    public void close() throws ItemStreamException
-    {
+    public void close() throws ItemStreamException {
         flatFileItemWriter.close();
     }
 
     @Override
-    public void write(List<? extends String> items) throws Exception
-    {
+    public void write(List<? extends String> items) throws Exception {
         writeList.clear();
-        List<String> writeList = new ArrayList<String>();
+        List<String> writeList = new ArrayList<>();
         for (String result : items) {
             writeList.add(result);            
         }
+        
         flatFileItemWriter.write(writeList);
     }    
 

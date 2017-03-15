@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -39,7 +39,6 @@ import java.io.*;
 import java.util.*;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.*;
 
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.*;
@@ -51,21 +50,20 @@ import org.springframework.core.io.FileSystemResource;
  *
  * @author Prithi Chakrapani, ochoaa
  */
-public class MutationDataWriter implements ItemStreamWriter <CompositeResultBean>{    
+public class MutationDataWriter implements ItemStreamWriter <CompositeResultBean> {    
+    
     @Value("#{jobParameters[outputDirectory]}")
     private String outputDirectory;
     
-    private static final Log LOG = LogFactory.getLog(MutationDataWriter.class);
-
+    @Value("#{stepExecutionContext['fmiCaseList']}")
+    private List<CaseType> fmiCaseList;
+    
     private final List<String> writeList = new ArrayList<>();
     private final FlatFileItemWriter<String> flatFileItemWriter = new FlatFileItemWriter<>();
         
     @Override
-    public void open(ExecutionContext executionContext) throws ItemStreamException {                
-        // retrieve list of foundation cases from execution context
-        final List<CaseType> fmiCaseList = (List<CaseType>) executionContext.get("fmiCaseList");
-                
-        String stagingFile = outputDirectory +  "data_mutations_extended.txt" ;
+    public void open(ExecutionContext executionContext) throws ItemStreamException {
+        File stagingFile = new File(outputDirectory, "data_mutations_extended.txt");
         PassThroughLineAggregator aggr = new PassThroughLineAggregator();
         flatFileItemWriter.setLineAggregator(aggr);
         flatFileItemWriter.setHeaderCallback(new FlatFileHeaderCallback() {
@@ -105,14 +103,12 @@ public class MutationDataWriter implements ItemStreamWriter <CompositeResultBean
     public void update(ExecutionContext executionContext) throws ItemStreamException {}
 
     @Override
-    public void close() throws ItemStreamException
-    {
+    public void close() throws ItemStreamException {
         flatFileItemWriter.close();
     }
 
     @Override
-    public void write(List<? extends CompositeResultBean> items) throws Exception
-    {
+    public void write(List<? extends CompositeResultBean> items) throws Exception {
         writeList.clear();
         List<String> writeList = new ArrayList<>();
         for (CompositeResultBean resultList : items) {
@@ -120,7 +116,7 @@ public class MutationDataWriter implements ItemStreamWriter <CompositeResultBean
                 if (!Strings.isNullOrEmpty(result)) {
                     writeList.add(result);
                 }
-            }            
+            }
         }
         
         flatFileItemWriter.write(writeList);
