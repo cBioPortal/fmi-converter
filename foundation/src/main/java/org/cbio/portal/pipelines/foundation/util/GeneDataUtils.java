@@ -74,6 +74,7 @@ public class GeneDataUtils {
     private boolean normalizedGeneSymbols;
 
     private static final Log LOG = LogFactory.getLog(GeneDataUtils.class);
+    
     @Autowired
     private void loadHumanGeneInfo() throws Exception {
         File geneInfoFile = new File(geneDataFilename);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -58,8 +58,8 @@ public class FusionData {
     
     public FusionData(String sampleId, RearrangementType rearrangement) {
         this.tumorSampleBarcode = sampleId;
-        this.gene = rearrangement.getTargetedGene().split("-")[0];
-        this.entrezGeneId = "0"; 
+        this.gene = rearrangement.getTargetedGene();
+        this.entrezGeneId = "0";
         
         // resolve the fusion event
         this.fusion = FoundationUtils.resolveFusionEvent(this.gene, rearrangement.getOtherGene(), 

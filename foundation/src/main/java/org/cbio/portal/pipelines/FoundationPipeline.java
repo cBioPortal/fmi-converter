@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -59,6 +59,7 @@ public class FoundationPipeline {
             .addOption("s", "source", true, "Foundation .XML source directory" )
             .addOption ("o", "output", true, "Output directory for writing staging files")
             .addOption ("c", "cancer_study_id", true, "Cancer study identifier for meta data")
+            .addOption("g", "gene_data_filename", true, "Path to gene symbol data file 'Homo_sapiens.gene_info'")
             .addOption("xml", "generate_xml", false, "Generate merged XML document ");
          
         return gnuOptions;
@@ -70,7 +71,7 @@ public class FoundationPipeline {
         System.exit(exitStatus);
     }  
             
-    private static void launchJob(String[] args, String sourceDirectory, String outputDirectory, String cancerStudyId, boolean generateXmlDocument) throws Exception {
+    private static void launchJob(String[] args, String sourceDirectory, String outputDirectory, String cancerStudyId, String geneDataFilename, boolean generateXmlDocument) throws Exception {
         // set up application context and job launcher
         SpringApplication app = new SpringApplication(FoundationPipeline.class);
         ConfigurableApplicationContext ctx= app.run(args);
@@ -86,6 +87,7 @@ public class FoundationPipeline {
                 .addString("sourceDirectory", sourceDirectory)
                 .addString("outputDirectory", outputDirectory)
                 .addString ("cancerStudyId", cancerStudyId)
+                .addString("geneDataFilename", geneDataFilename)
                 .toJobParameters();
         JobExecution jobExecution = jobLauncher.run(foundationJob, jobParameters);
         
@@ -104,9 +106,6 @@ public class FoundationPipeline {
             !commandLine.hasOption("cancer_study_id"))  {
             help(gnuOptions, 0);        
         }
-        for (String v : commandLine.getArgList()) {
-            System.out.println(v);
-        }
 
         // light pre-processing for source directory and output directory paths
         String sourceDirectory = commandLine.getOptionValue("source");
@@ -115,10 +114,12 @@ public class FoundationPipeline {
         if (!sourceDirectory.endsWith(File.separator)) sourceDirectory += File.separator;
         if (!outputDirectory.endsWith(File.separator)) outputDirectory += File.separator;
         
-        // determine whether to run xml document generator job or not
-        boolean generateXmlDocument = commandLine.hasOption("generate_xml");
-
-        launchJob(args, sourceDirectory, outputDirectory, cancerStudyId, generateXmlDocument);
+        String geneDataFilename = "";
+        if (commandLine.hasOption("g")) {
+            geneDataFilename = commandLine.getOptionValue("g");
+        }
+        
+        launchJob(args, sourceDirectory, outputDirectory, cancerStudyId, geneDataFilename, commandLine.hasOption("generate_xml"));
     }
     
 }

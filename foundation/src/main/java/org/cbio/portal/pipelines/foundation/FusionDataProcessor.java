@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -34,10 +34,12 @@ package org.cbio.portal.pipelines.foundation;
 
 import org.cbio.portal.pipelines.foundation.model.*;
 import org.cbio.portal.pipelines.foundation.model.staging.FusionData;
-import org.cbio.portal.pipelines.foundation.util.FoundationUtils;
+import org.cbio.portal.pipelines.foundation.util.*;
 
 import java.util.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.batch.item.ItemProcessor;
 
 /**
@@ -46,24 +48,43 @@ import org.springframework.batch.item.ItemProcessor;
  */
 public class FusionDataProcessor implements ItemProcessor<CaseType, String>{    
     
+    private GeneDataUtils geneDataUtils;
+    
+    public void setProperties(GeneDataUtils geneDataUtils) {
+        this.geneDataUtils = geneDataUtils;
+    }
+    
+    private static final Log LOG = LogFactory.getLog(FusionDataProcessor.class);
+    
     @Override
     public String process(final CaseType caseType) throws Exception {
         List<String> fusionRecords = new ArrayList();
         for (RearrangementType re : caseType.getVariantReport().getRearrangements().getRearrangement()) {
+            // resolve gene symbols for targeted gene and other gene for rearrangement type record before converting record
+            String targetedGene = geneDataUtils.resolveGeneSymbol(re.getTargetedGene().split("-")[0]);
+            String otherGene = geneDataUtils.resolveGeneSymbol(
+                    FoundationUtils.resolveOtherGene(re.getTargetedGene(), re.getOtherGene()));
+            
+            // skip fusion events containing ncRNAs
+            if (geneDataUtils.isNcRNA(targetedGene) || geneDataUtils.isNcRNA(otherGene)) {
+                LOG.info("Skipping fusion record with ncRNA: " + targetedGene + "-" + otherGene);
+                continue;
+            }
+            re.setTargetedGene(targetedGene);
+            re.setOtherGene(otherGene);
+            
+            // create fusion record and update entrez id before transforming
             FusionData fd = new FusionData(caseType.getCase(), re);
+            fd.setEntrezGeneId(geneDataUtils.resolveEntrezId(targetedGene));
             fusionRecords.add(transformRecord(fd));
             
-            // switch the targeted gene and other gene if other gene not empty and if 
-            // other gene does not contain intergenic or '/'
-            if (!FoundationUtils.NULL_EMPTY_VALUES.contains(re.getOtherGene()) 
-                    && !re.getOtherGene().equals(re.getTargetedGene()) && 
-                    !re.getOtherGene().contains("intergenic") && !re.getOtherGene().contains("/")) {
-                FusionData fdSwitched = FoundationUtils.getOtherGeneFusionEvent(caseType.getCase(), re);
-                fdSwitched.setFusion(fd.getFusion());
+            // check if switched fusion event is valid and update entrez id before mapping
+            FusionData fdSwitched = FoundationUtils.getOtherGeneFusionEvent(caseType.getCase(), re, fd.getFusion());
+            if (fdSwitched != null) {
+                fdSwitched.setEntrezGeneId(geneDataUtils.resolveEntrezId(otherGene));
                 fusionRecords.add(transformRecord(fdSwitched));
             }
         }
-        
         return StringUtils.join(fusionRecords, "\n");
     }
         

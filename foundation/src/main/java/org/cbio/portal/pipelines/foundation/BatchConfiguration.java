@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2016-17 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -144,11 +144,11 @@ public class BatchConfiguration {
     @Bean
     public Step generalDataStep() {
         return stepBuilderFactory.get("generalDataStep")
+                .listener(foundationStepListener())
                 .<CaseType, CompositeResultBean> chunk(chunkInterval)
                 .reader(foundationReader())
                 .processor(foundationCompositeProcessor())
                 .writer(compositeWriter())
-                .listener(foundationStepListener())
                 .build();
     }    
     
@@ -171,6 +171,7 @@ public class BatchConfiguration {
     }
     
     @Bean 
+    @StepScope
     public FoundationCompositeProcessor foundationCompositeProcessor(){
         return new FoundationCompositeProcessor();
     }
@@ -212,10 +213,10 @@ public class BatchConfiguration {
     @Bean
     public Step cnaDataStep() {
         return stepBuilderFactory.get("cnaDataStep")
+            .listener(cnaStepListener())
             .<String, String> chunk(chunkInterval)
             .reader(cnaDataReader())
             .writer(cnaDataWriter())
-            .listener(cnaStepListener())
             .build();
     }        
     
