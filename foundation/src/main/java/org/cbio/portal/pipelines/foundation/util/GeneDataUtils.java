@@ -37,9 +37,14 @@ import java.util.*;
 import org.apache.commons.logging.*;
 
 import org.springframework.batch.core.configuration.annotation.JobScope;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.item.file.*;
+import org.springframework.batch.item.file.mapping.*;
+import org.springframework.batch.item.file.transform.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.BindException;
 
 /**
  *
@@ -74,39 +79,57 @@ public class GeneDataUtils {
     private void loadHumanGeneInfo() throws Exception {
         File geneInfoFile = new File(geneDataFilename);
         if (geneInfoFile.exists()) {
-            LOG.info("Loading data from: " + geneDataFilename);
-            FileReader reader = new FileReader(geneInfoFile);
-            BufferedReader buf = new BufferedReader(reader);
-            String line = buf.readLine();
-            List<String> header = new ArrayList();
-            while (line != null) {
-                if (line.startsWith("#")) {
-                    header = Arrays.asList(splitDataFields(line));
-                    continue;
+            final DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer(DelimitedLineTokenizer.DELIMITER_TAB);
+            DefaultLineMapper<Properties> lineMapper = new DefaultLineMapper();
+            lineMapper.setLineTokenizer(tokenizer);
+            lineMapper.setFieldSetMapper(new FieldSetMapper() {
+                @Override
+                public Properties mapFieldSet(FieldSet fs) throws BindException {
+                    return fs.getProperties();
                 }
-                List<String> parts = Arrays.asList(line.split("\t"));
-                String entrezId = parts.get(header.indexOf(GENE_ID_COLUMN));
-                String hugoSymbol = parts.get(header.indexOf(SYMBOL_COLUMN));
-                String typeOfGene = parts.get(header.indexOf(TYPE_OF_GENE_COLUMN));
-                
-                // add ncRNAs to blacklist
-                if (typeOfGene.equals("ncRNA")) {
-                    ncRNABlackList.add(hugoSymbol);
+            });
+            FlatFileItemReader<Properties> reader = new FlatFileItemReader();
+            reader.setResource(new FileSystemResource(geneDataFilename));
+            reader.setLineMapper(lineMapper);
+            reader.setLinesToSkip(1);
+            reader.setSkippedLinesCallback(new LineCallbackHandler() {
+                @Override
+                public void handleLine(String line) {
+                    tokenizer.setNames(splitDataFields(line));
                 }
-                
-                // add values to appropriate data map
-                hugoGeneSymbolMap.put(hugoSymbol, entrezId);
-                entrezGeneIdMap.put(entrezId, hugoSymbol);
-                String synonyms = parts.get(header.indexOf(SYNONYMS_COLUMN));
-                if (!synonyms.equals("-")) {
-                    for (String alias : synonyms.split("\\|")) {
-                        geneAliasMap.put(alias, hugoSymbol);
+            });
+            reader.open(new ExecutionContext());
+
+            try {
+                Properties record = reader.read();
+                while (record != null) {
+                    String entrezId = record.getProperty(GENE_ID_COLUMN);
+                    String hugoSymbol = record.getProperty(SYMBOL_COLUMN);
+                    String typeOfGene = record.getProperty(TYPE_OF_GENE_COLUMN);
+                    String synonyms = record.getProperty(SYNONYMS_COLUMN);
+
+                    // add ncRNAs to blacklist
+                    if (typeOfGene.equals("ncRNA")) {
+                        ncRNABlackList.add(hugoSymbol);
                     }
+
+                    // add values to appropriate data map
+                    hugoGeneSymbolMap.put(hugoSymbol, entrezId);
+                    entrezGeneIdMap.put(entrezId, hugoSymbol);
+                    if (!synonyms.equals("-")) {
+                        for (String alias : synonyms.split("\\|")) {
+                            geneAliasMap.put(alias, hugoSymbol);
+                        }
+                    }
+                    record = reader.read();
                 }
-                line = buf.readLine();
+                reader.close();
+                this.normalizedGeneSymbols = true;
             }
-            buf.close();
-            this.normalizedGeneSymbols = true;
+            catch (Exception ex) {
+                LOG.error("Error loading data from: " + geneDataFilename + " - gene symbol normalization will be skipped!");
+                ex.printStackTrace();
+            }
         }
         else {
             LOG.warn("Skipping gene symbol normalization! " + 
