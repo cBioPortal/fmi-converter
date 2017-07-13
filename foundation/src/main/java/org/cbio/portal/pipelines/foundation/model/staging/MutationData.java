@@ -100,7 +100,7 @@ public class MutationData {
         this.strand = "+";
         this.aaChange = shortVariant.getProteinEffect();
         this.cDNA_change = shortVariant.getCdsEffect();
-        this.transcript = shortVariant.getTranscript();
+        this.transcript = shortVariant.getTranscript() != null ? shortVariant.getTranscript() : "";
         
         /**
          * resolve reference allele, tumor allele, variant type, and end position.
@@ -109,12 +109,8 @@ public class MutationData {
         String bases = shortVariant.getCdsEffect().replaceAll("[^tcgaTCGA]", " ").trim();
         String[] alleleList = bases.toUpperCase().split(" ");
         
-        this.refAllele = FoundationUtils.resolveReferenceAllele(bases, alleleList, shortVariant.getCdsEffect(), shortVariant.getStrand());
-        if (this.refAllele.isEmpty()) {
-            LOG.warn("Could not resolve reference allele for sample id: " + sampleId + " from cds effect: " + shortVariant.getCdsEffect());
-        }
-
-        this.tumorAllele1 = FoundationUtils.resolveTumorAllele(bases, alleleList, shortVariant.getCdsEffect(), shortVariant.getStrand());
+        this.refAllele = FoundationUtils.resolveReferenceAllele(bases, alleleList, shortVariant.getCdsEffect(), (shortVariant.getStrand() != null ? shortVariant.getStrand() : this.strand));
+        this.tumorAllele1 = FoundationUtils.resolveTumorAllele(bases, alleleList, shortVariant.getCdsEffect(), (shortVariant.getStrand() != null ? shortVariant.getStrand() : this.strand));
         if (this.tumorAllele1.isEmpty()) {
             LOG.warn("Could not resolve tumor allele for sample id: " + sampleId + " from cds effect: " + shortVariant.getCdsEffect());
         }                
@@ -124,19 +120,19 @@ public class MutationData {
             LOG.warn("Could not resolve variant type for sample id: " + sampleId + "from cds effect: " + shortVariant.getCdsEffect());
         }
         
-        this.variantClassification = FoundationUtils.resolveVariantClassification(shortVariant.getFunctionalEffect(), this.variantType);
-        this.startPosition = FoundationUtils.resolveStartPosition(shortVariant.getPosition(), this.variantType);
-        this.endPosition = FoundationUtils.calculateEndPosition(shortVariant.getCdsEffect(), Integer.valueOf(this.startPosition));
+        this.variantClassification = FoundationUtils.resolveVariantClassification(shortVariant.getFunctionalEffect(), variantType);
+        this.startPosition = FoundationUtils.resolveStartPosition(shortVariant.getPosition(), variantType);
+        this.endPosition = FoundationUtils.calculateEndPosition(shortVariant.getCdsEffect(), Integer.valueOf(startPosition), refAllele);
         
         /**
          * calculate mutation data.
-         */        
-        Float depth = Float.parseFloat(shortVariant.getDepth().toString());
+         */
+        Float depth = shortVariant.getDepth() != null ? Float.parseFloat(shortVariant.getDepth().toString()) : null;
         Float percentReads = Float.parseFloat(shortVariant.getPercentReads().toString());
-        Long altCount=  Math.round( depth * (percentReads/100.0));
+        Long altCount=  depth != null ? Math.round( depth * (percentReads/100.0)) : null;
         
-        this.tAltCount =  Long.toString(Math.round( depth * (percentReads/100.0)));        
-        this.tRefCount = Long.toString((long) (depth - altCount));
+        this.tAltCount =  depth != null ? Long.toString(Math.round( depth * (percentReads/100.0))) : "";
+        this.tRefCount = (depth != null && altCount != null) ? Long.toString((long) (depth - altCount)) : "";
         
         /**
          * set defaults for MutationData.

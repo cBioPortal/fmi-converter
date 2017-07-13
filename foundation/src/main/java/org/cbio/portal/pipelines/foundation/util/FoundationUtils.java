@@ -34,11 +34,20 @@ package org.cbio.portal.pipelines.foundation.util;
 
 import org.cbio.portal.pipelines.foundation.model.*;
 import org.cbio.portal.pipelines.foundation.model.staging.*;
+import org.cbio.portal.pipelines.foundation.model.ensembl.*;
 
 import java.util.*;
+import java.util.regex.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import com.google.common.base.Strings;
+import org.apache.commons.logging.*;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Util class for resolving data
@@ -58,7 +67,42 @@ public class FoundationUtils {
     
     private static final Map<Character,String> complementMap = new HashMap<>();
     private static final Map<Object, String> variantTypeMap = new HashMap<>();  
-    private static final Map<String, String> variantClassificationMap = new HashMap<>();  
+    private static final Map<String, String> variantClassificationMap = new HashMap<>();
+    
+    public static final Pattern PROTEIN_EFFECT_REGEX = Pattern.compile("[A-Z]([\\d]*)_[A-Z]([\\d]*)del\\S*");
+    public static final Pattern CDS_EFFECT_REGEX = Pattern.compile("([\\d]*)_([\\d]*)del\\S*");
+    
+    private static final Log LOG = LogFactory.getLog(FoundationUtils.class);
+    
+    private static String ensemblServer;
+    @Value("${ensembl.server}")
+    private void setEnsemblServer(String ensemblServer) {
+        FoundationUtils.ensemblServer = ensemblServer;
+    }
+        
+    private static String ensemblEndpointProteinAccession;
+    @Value("${ensembl.endpoint.protein_accession}")
+    private void setEnsemblEndpointProteinAccession(String ensemblEndpointProteinAccession) {
+        FoundationUtils.ensemblEndpointProteinAccession = ensemblEndpointProteinAccession;
+    }
+    
+    private static String ensemblEndpointGenomicCoords;
+    @Value("${ensembl.endpoint.genomic_coords}")
+    private void setEnsemblEndpointGenomicCoords(String ensemblEndpointGenomicCoords) {
+        FoundationUtils.ensemblEndpointGenomicCoords = ensemblEndpointGenomicCoords;
+    }
+    
+    private static String ensemblEndpointGenomicSeq;
+    @Value("${ensembl.endpoint.genomic_seq}")
+    private void setEnsemblEndpointGenomicSeq(String ensemblEndpointGenomicSeq) {
+        FoundationUtils.ensemblEndpointGenomicSeq = ensemblEndpointGenomicSeq;
+    }
+    
+    private static String ensemblEndpointCdsGenomicCoords;
+    @Value("${ensembl.endpoint.cds.genomic_coords}")
+    private void setEnsemblEndpointCdsGenomicCoords(String ensemblEndpointCdsGenomicCoords) {
+        FoundationUtils.ensemblEndpointCdsGenomicCoords = ensemblEndpointCdsGenomicCoords;
+    }
 
     @Autowired
     public void setReverseComplementMap() {        
@@ -248,12 +292,15 @@ public class FoundationUtils {
      * @param startPosition
      * @return 
      */
-    public static String calculateEndPosition(String cdsEffect, int startPosition) {
+    public static String calculateEndPosition(String cdsEffect, int startPosition, String refAllele) {
         int endPosition = -1;
         
         String[] changes = cdsEffect.replaceAll("[^atcgATCG]", " ").trim().split(" ");
         if (cdsEffect.contains("del")) {
-            if (changes.length > 1) {
+            if (!refAllele.isEmpty()) {
+                endPosition = startPosition + refAllele.length() - 1;
+            }
+            else if (changes.length > 1) {
                 endPosition = startPosition + changes[1].length() - changes[0].length() - 1;
             }
             else {
@@ -283,11 +330,12 @@ public class FoundationUtils {
      */
     public static String resolveFusionEvent(String targetedGene, String otherGene, String description, String comment) {
         String[] fusionEventParts = targetedGene.split("-");
-        
+        description = resolveFusionEventDescription(targetedGene, otherGene, description);
+
         String fusionEvent = fusionEventParts[0];
         if (!NULL_EMPTY_VALUES.contains(otherGene) && !otherGene.equals(targetedGene) 
                 && !otherGene.contains("intergenic") && !otherGene.contains("intragenic")) {
-            fusionEvent += "-" + otherGene + " " +description;
+            fusionEvent += "-" + otherGene + " " + description;
         }
         else {
             if (targetedGene.contains("intergenic") || otherGene.contains("intergenic") || NULL_EMPTY_VALUES.contains(otherGene)) {
@@ -304,9 +352,23 @@ public class FoundationUtils {
         if (!Strings.isNullOrEmpty(comment)) {
             fusionEvent += ": " + comment;
         }
-        return fusionEvent;
-    }
+        return fusionEvent.trim();
+    }    
     
+    private static String resolveFusionEventDescription(String targetedGene, String otherGene, String description) {
+        if (NULL_EMPTY_VALUES.contains(description)) {
+            if (NULL_EMPTY_VALUES.contains(otherGene) || targetedGene.equals(otherGene)) {
+                return "";
+            }
+        }
+        else {
+            List<String> descriptionParts = Arrays.asList(description.split(";"));
+            if (descriptionParts.size() == 1) {
+                return description;
+            }
+        }
+        return "fusion";
+    }
     
     /**
      * Get the fusion event with the other gene set as the targeted gene.
@@ -437,6 +499,120 @@ public class FoundationUtils {
         }
         
         return tumorNucleiPercent;
+    }
+    
+    /**
+     * Tries to salvage the reference allele if given as empty string in source XML. 
+     * 
+     * @param gene
+     * @param position
+     * @param cdsEffect
+     * @return 
+     */
+    public static String salvageEmptyReferenceAllele(String gene, String position, String cdsEffect) {
+        String chromosome = position.split(":")[0].replace("chr","");
+        String startPosition = String.valueOf(Integer.valueOf(position.split(":")[1]) + 1);
+        String endPosition = "";
+        String referenceAllele = "";
+        
+        GenomicMapping genomicMapping = null;
+        List<Transcript> transcripts = getGeneTranscripts(gene);
+        // return empty ref allele if no transcripts found for gene 
+        if (transcripts.isEmpty()) return "";
+        
+        for (Transcript transcript : transcripts) {
+            try {
+                genomicMapping = getGenomicMappingFromCdsEffect(transcript.getId(), cdsEffect);
+            }
+            catch (Exception e) {}
+            if (genomicMapping == null || !startPosition.equals(String.valueOf(genomicMapping.getStart()))) {
+                continue;
+            }
+            endPosition = String.valueOf(genomicMapping.getEnd());
+            break;
+        }
+        if (genomicMapping == null) {
+            return referenceAllele;
+        }
+        if (!endPosition.isEmpty()) {
+            GenomicSequence genomicSequence = getGenomicSequence(chromosome, startPosition, endPosition);
+            if (genomicSequence != null) {
+                referenceAllele = genomicSequence.getSeq();
+            }
+        }
+        return genomicMapping.getStrand() == 1 ? referenceAllele : getReverseComplement(referenceAllele);
+    }
+    
+    /**
+     * Given a gene, returns gene transcripts.
+     * @param gene
+     * @return 
+     */
+    private static List<Transcript> getGeneTranscripts(String gene) {
+        List<Transcript> transcripts = new ArrayList();
+        String url = ensemblServer + ensemblEndpointProteinAccession.replace("<GENESYMBOL>", gene);
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = getRequestEntity();
+        try {
+            ResponseEntity<GeneXrefData> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, GeneXrefData.class);
+            transcripts = responseEntity.getBody().getTranscript();
+        }
+        catch (HttpClientErrorException ex) {
+            LOG.error("getGeneTranscripts(),  exception thrown for gene " + gene + 
+                    " (" + url + ")\n" + ex.getLocalizedMessage());
+        }
+        return transcripts;
+    }
+    
+    /**
+     * Given an Ensembl transcript accession and cds effect from XML data, returns genomic mapping.
+     * @param transcriptAccession
+     * @param cdsEffect
+     * @return 
+     */
+    private static GenomicMapping getGenomicMappingFromCdsEffect(String transcriptAccession, String cdsEffect) {
+        Matcher cdsEffectMatcher = CDS_EFFECT_REGEX.matcher(cdsEffect);
+        String cdsEffectStartPos = "";
+        String cdsEffectEndPos = "";
+        if (cdsEffectMatcher.find()) {
+            cdsEffectStartPos = cdsEffectMatcher.group(1);
+            cdsEffectEndPos = cdsEffectMatcher.group(2);
+        }
+        if (cdsEffectStartPos.isEmpty() || cdsEffectEndPos.isEmpty()) {
+            return null;
+        }
+        String url = ensemblServer + ensemblEndpointCdsGenomicCoords.replace("<ENSEMBL_TRANSCRIPT_ACCESSION>", transcriptAccession).replace("<CDS_EFFECT_START>", cdsEffectStartPos).replace("<CDS_EFFECT_END>", cdsEffectEndPos);
+        
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = getRequestEntity();
+        ResponseEntity<ProteinGenomicMapping> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ProteinGenomicMapping.class);       
+        GenomicMapping genomicMapping = responseEntity.getBody().getMappings().get(0);
+        if (genomicMapping.getStrand() == -1) {
+            genomicMapping.setStart(genomicMapping.getStart() + 1);
+        }
+        return genomicMapping;
+    }
+    
+    /**
+     * Returns the reference allele sequence using the chromosome and genomic coordinates.
+     * @param chromosome
+     * @param startPosition
+     * @param endPosition
+     * @return 
+     */
+    private static GenomicSequence getGenomicSequence(String chromosome, String startPosition, String endPosition) {
+        String url = ensemblServer + ensemblEndpointGenomicSeq.replace("<CHROMOSOME>", chromosome).replace("<GENOMIC_START_POSITION>", startPosition).replace("<GENOMIC_END_POSITION>", endPosition);
+        
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = getRequestEntity();
+        ResponseEntity<GenomicSequence> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, GenomicSequence.class);
+        return responseEntity.getBody();
+    }
+    
+    private static HttpEntity getRequestEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        return new HttpEntity<Object>(headers);
     }
     
 }
