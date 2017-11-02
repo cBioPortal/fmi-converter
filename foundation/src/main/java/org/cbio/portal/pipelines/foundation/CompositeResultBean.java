@@ -37,10 +37,11 @@ package org.cbio.portal.pipelines.foundation;
  * @author ochoaa
  */
 public class CompositeResultBean {
-   
+
     private String clinicalDataResult;
     private String mutationDataResult;
     private String fusionDataResult;
+    private String genePanelDataResult;
 
     /**
      * @return the clinicalDataResult
@@ -83,5 +84,19 @@ public class CompositeResultBean {
     public void setFusionDataResult(String fusionDataResult) {
         this.fusionDataResult = fusionDataResult;
     }
-    
+
+    /**
+     * @return the genePanelDataResult
+     */
+    public String getGenePanelDataResult() {
+        return genePanelDataResult;
+    }
+
+    /**
+     * @param genePanelDataResult the genePanelDataResult to set
+     */
+    public void setGenePanelDataResult(String genePanelDataResult) {
+        this.genePanelDataResult = genePanelDataResult;
+    }
+
 }

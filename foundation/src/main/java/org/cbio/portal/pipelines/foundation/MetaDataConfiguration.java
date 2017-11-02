@@ -54,10 +54,10 @@ public class MetaDataConfiguration {
         mutationsMap.put("profile_name", "Mutations.");
         mutationsMap.put("profile_description", "Foundation mutations data for <study_id>");
         mutationsMap.put("data_filename", "data_mutations_extended.txt");
-        
+
         return mutationsMap;
     }
-    
+
     @Bean(name="cnaMetaData")
     public Map<String, String> cnaMetaData() {
         Map<String, String> cnaMap = new LinkedHashMap<>();
@@ -69,10 +69,10 @@ public class MetaDataConfiguration {
         cnaMap.put("profile_name", "Putative copy-number from GISTIC");
         cnaMap.put("profile_description", "Putative copy-number from GISTIC 2.0. Values: -2 = homozygous deletion; -1 = hemizygous deletion; 0 = neutral / no change; 1 = gain; 2 = high level amplification");
         cnaMap.put("data_filename", "data_CNA.txt");
-        
+
         return cnaMap;
-    }    
-    
+    }
+
     @Bean(name="fusionsMetaData")
     public Map<String, String> fusionsMetaData() {
         Map<String, String> fusionsMap = new LinkedHashMap<>();
@@ -84,8 +84,16 @@ public class MetaDataConfiguration {
         fusionsMap.put("profile_name", "Fusions.");
         fusionsMap.put("profile_description", "Foundation fusions data for <study_id>");
         fusionsMap.put("data_filename", "data_fusions.txt");
-        
+
         return fusionsMap;
-    }    
-    
+    }
+
+    @Bean(name="genePanelMetaData")
+    public Map<String, String> genePanelMetaData() {
+        Map<String, String> genePanelMap = new LinkedHashMap<>();
+        genePanelMap.put("cancer_study_identifier", "<study_id>");
+        genePanelMap.put("data_filename", "data_gene_matrix.txt");
+        return genePanelMap;
+    }
+
 }
