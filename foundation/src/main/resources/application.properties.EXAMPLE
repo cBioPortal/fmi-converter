@@ -1,2 +1,11 @@
 spring.batch.job.enabled=false
-chunk.interval=30
+chunk.interval=50
+
+ensembl.server=http://grch37.rest.ensembl.org/
+#ensembl.endpoint.protein_accession=lookup/symbol/homo_sapiens/<GENESYMBOL>
+#ensembl.endpoint.protein_accession=lookup/symbol/homo_sapiens/<GENESYMBOL>?content-type=application/json
+#ensembl.endpoint.protein_accession=lookup/symbol/homo_sapiens/<GENESYMBOL>?content-type=application/json;expand=1
+ensembl.endpoint.protein_accession=lookup/symbol/homo_sapiens/<GENESYMBOL>?expand=1
+ensembl.endpoint.genomic_coords=map/translation/<ENSEMBL_PROTEIN_ACCESSION>/<PROTEIN_EFFECT_START>..<PROTEIN_EFFECT_END>?content-type=application/json
+ensembl.endpoint.cds.genomic_coords=map/cds/<ENSEMBL_TRANSCRIPT_ACCESSION>/<CDS_EFFECT_START>..<CDS_EFFECT_END>?content-type=application/json
+ensembl.endpoint.genomic_seq=sequence/region/human/<CHROMOSOME>:<GENOMIC_START_POSITION>..<GENOMIC_END_POSITION>?content-type=application/json

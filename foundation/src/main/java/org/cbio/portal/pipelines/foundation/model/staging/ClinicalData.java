@@ -41,7 +41,7 @@ import org.cbio.portal.pipelines.foundation.util.FoundationUtils;
  * Class for converting CaseType to ClinicalData
  * @author Prithi Chakrapani, ochoaa
  */
-public class ClinicalData /*extends DataClinicalModel*/ {
+public class ClinicalData {
      
     private String sampleId;
     private String gender;
@@ -68,7 +68,8 @@ public class ClinicalData /*extends DataClinicalModel*/ {
         this.sampleId = caseType.getCase();
         this.gender = caseType.getVariantReport().getGender();
         this.studyId = caseType.getFmiCase();
-        this.pipelineVersion = caseType.getVariantReport().getPipelineVersion();
+        this.pipelineVersion = caseType.getVariantReport().getPipelineVersion() != null ? 
+                caseType.getVariantReport().getPipelineVersion() : "";
         
         // resolve tumor nuclei percent        
         this.tumorNucleiPercent = FoundationUtils.resolveTumorNucleiPercent(caseType);
@@ -95,8 +96,10 @@ public class ClinicalData /*extends DataClinicalModel*/ {
 
         // set additional properties from non-human content data
         Map<String, String> nonHumanContentData = new HashMap<>();
-        for (NonHumanType nht : caseType.getVariantReport().getNonHumanContent().getNonHuman()) {
-            nonHumanContentData.put(nht.getOrganism(), nht.getStatus());
+        if (caseType.getVariantReport().getNonHumanContent() != null) {
+            for (NonHumanType nht : caseType.getVariantReport().getNonHumanContent().getNonHuman()) {
+                nonHumanContentData.put(nht.getOrganism(), nht.getStatus());
+            }
         }
         this.additionalProperties = nonHumanContentData;
         

@@ -66,7 +66,7 @@ public class FusionData {
                 rearrangement.getDescription(), rearrangement.getComment());
 
         // resolve the rearrangement frame
-        this.frame = FoundationUtils.resolveRearrangementFrame(rearrangement.getInFrame());
+        this.frame = rearrangement.getInFrame() != null ? FoundationUtils.resolveRearrangementFrame(rearrangement.getInFrame()) : "unknown";
         
         /**
          * set defaults for MutationData.

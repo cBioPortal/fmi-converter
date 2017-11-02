@@ -87,7 +87,7 @@ public class FoundationFileTasklet implements Tasklet {
                 }
                 // if non-human content list is not empty then add to map of normalized
                 // column names to external column name
-                if (!ct.getVariantReport().getNonHumanContent().getNonHuman().isEmpty()) {
+                if (ct.getVariantReport().getNonHumanContent() != null && !ct.getVariantReport().getNonHumanContent().getNonHuman().isEmpty()) {
                     for (NonHumanType nht : ct.getVariantReport().getNonHumanContent().getNonHuman()) {
                         nonHumanContentColumns.add(nht.getOrganism());
                     }

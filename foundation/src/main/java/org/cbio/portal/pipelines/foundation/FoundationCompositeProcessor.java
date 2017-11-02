@@ -77,7 +77,7 @@ public class FoundationCompositeProcessor implements ItemProcessor<CaseType, Com
         }
         catch (NullPointerException ex ) {
             LOG.error("Error processing clinical, fusion, or mutation data for case: " + ct.getCase());
-            ex.printStackTrace();            
+            throw new RuntimeException(ex);
         }
           
         return compositeResultBean;
