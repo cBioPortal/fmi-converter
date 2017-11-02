@@ -60,23 +60,23 @@ public class BatchConfiguration {
 
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
-    
+
     @Value("${chunk.interval}")
     private int chunkInterval;
 
     /**
-     * Foundation Job. 
+     * Foundation Job.
      */
     @Bean
     public Job foundationJob() {
         return jobBuilderFactory.get(FOUNDATION_JOB)
             .start(extractFileDataStep())
-                .next(cnaDataStep())                
+                .next(cnaDataStep())
                 .next(generalDataStep())
                 .next(metaDataStep())
-            .build();                        
+            .build();
     }
-    
+
     /**
      * Foundation XML document generator job
      */
@@ -87,7 +87,7 @@ public class BatchConfiguration {
                 .next(foundationXmlGeneratorStep())
                 .build();
     }
-    
+
     /**
      * File processing Step.
      */
@@ -97,7 +97,7 @@ public class BatchConfiguration {
                 .tasklet(foundationFileTasklet())
                 .build();
     }
-    
+
     /**
      * File processing Tasklet.
      * Reads files from the source directory and stores list
@@ -109,7 +109,7 @@ public class BatchConfiguration {
     public Tasklet foundationFileTasklet() {
         return new FoundationFileTasklet();
     }
-    
+
     /**
      * XML document generator step.
      */
@@ -120,10 +120,10 @@ public class BatchConfiguration {
                 .tasklet(foundationXmlGeneratorTasklet())
                 .build();
     }
-    
+
     /**
      * Foundation XML document generator tasklet.
-     * Merges Foundation cases into single ClientCaseInfoType instance and 
+     * Merges Foundation cases into single ClientCaseInfoType instance and
      * writes output as a formatted XML document.
      */
     @Bean
@@ -131,15 +131,14 @@ public class BatchConfiguration {
     public Tasklet foundationXmlGeneratorTasklet() {
         return new FoundationXmlGeneratorTasklet();
     }
-    
+
     @Bean
     public StepExecutionListener foundationXmlGeneratorListener() {
         return new FoundationXmlGeneratorListener();
     }
-    
-    
+
     /**
-     * General Step for Clinical, Mutation, and Fusion data. 
+     * General Step for Clinical, Mutation, and Fusion data.
      */
     @Bean
     public Step generalDataStep() {
@@ -150,27 +149,27 @@ public class BatchConfiguration {
                 .processor(foundationCompositeProcessor())
                 .writer(compositeWriter())
                 .build();
-    }    
-    
+    }
+
     /**
-     * Listener for Clinical, Mutation, and Fusion data. 
+     * Listener for Clinical, Mutation, and Fusion data.
      * Step listener adds list of foundation cases to step execution context .
-     */    
+     */
     @Bean
     public StepExecutionListener foundationStepListener() {
         return new FoundationStepListener();
     }
 
     /**
-     * Reader, Composite Processor, and Composite Writer for Clinical, Mutation, and Fusion data. 
-     */        
+     * Reader, Composite Processor, and Composite Writer for Clinical, Mutation, and Fusion data.
+     */
     @Bean
     @StepScope
     public ItemStreamReader<CaseType> foundationReader() {
         return new FoundationReader();
     }
-    
-    @Bean 
+
+    @Bean
     @StepScope
     public FoundationCompositeProcessor foundationCompositeProcessor(){
         return new FoundationCompositeProcessor();
@@ -184,11 +183,12 @@ public class BatchConfiguration {
         delegates.add(clinicalWriter());
         delegates.add(mutationWriter());
         delegates.add(fusionWriter());
-        
+        delegates.add(genePanelWriter());
+
         writer.setDelegates(delegates);
         return writer;
-    }    
-    
+    }
+
     @Bean
     @StepScope
     public ItemStreamWriter<CompositeResultBean> clinicalWriter() {
@@ -207,9 +207,15 @@ public class BatchConfiguration {
         return new MutationDataWriter();
     }
 
+    @Bean
+    @StepScope
+    public ItemStreamWriter<CompositeResultBean> genePanelWriter() {
+        return new GenePanelDataWriter();
+    }
+
     /**
-     * Step for CNA data. 
-     */            
+     * Step for CNA data.
+     */
     @Bean
     public Step cnaDataStep() {
         return stepBuilderFactory.get("cnaDataStep")
@@ -218,28 +224,28 @@ public class BatchConfiguration {
             .reader(cnaDataReader())
             .writer(cnaDataWriter())
             .build();
-    }        
-    
+    }
+
     /**
-     * Reader, Writer, and Listener for CNA data. 
-     */             
+     * Reader, Writer, and Listener for CNA data.
+     */
     @Bean
     @JobScope
     public ItemStreamReader<String> cnaDataReader() {
         return new CnaDataReader();
     }
-    
+
     @Bean
     @StepScope
     public ItemStreamWriter<String> cnaDataWriter() {
         return new CnaDataWriter();
     }
-    
+
     @Bean
     public StepExecutionListener cnaStepListener() {
         return new CnaStepListener();
     }
-    
+
     /**
      * Step and Tasklet for writing meta data files.
      */
@@ -249,11 +255,11 @@ public class BatchConfiguration {
                 .tasklet(metaDataTasklet())
                 .build();
     }
-    
+
     @Bean
     @StepScope
     public Tasklet metaDataTasklet() {
         return new MetaDataTasklet();
     }
 
-}    
+}

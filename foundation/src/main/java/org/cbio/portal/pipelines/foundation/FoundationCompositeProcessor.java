@@ -49,37 +49,39 @@ public class FoundationCompositeProcessor implements ItemProcessor<CaseType, Com
 
     @Value("#{stepExecutionContext['addNonHumanContentData']}")
     private boolean addData;
-    
+
     @Value("#{stepExecutionContext['nonHumanContentColumns']}")
     private List<String> columns;
-    
+
     @Autowired
     private GeneDataUtils geneDataUtils;
-    
+
     private final ClinicalDataProcessor clinicalDataProcessor = new ClinicalDataProcessor();
     private final MutationDataProcessor mutationDataProcessor = new MutationDataProcessor();
     private final FusionDataProcessor fusionDataProcessor = new FusionDataProcessor();
-    
+    private final GenePanelDataProcessor genePanelDataProcessor = new GenePanelDataProcessor();
+
     private static final Log LOG = LogFactory.getLog(FoundationCompositeProcessor.class);
-    
+
     @Override
     public CompositeResultBean process(CaseType ct) throws Exception {
         // set properties for clinical, mutation, and fusion data processors
         clinicalDataProcessor.setProperties(addData, columns);
         mutationDataProcessor.setProperties(geneDataUtils);
         fusionDataProcessor.setProperties(geneDataUtils);
-        
+
         final CompositeResultBean compositeResultBean = new CompositeResultBean();
         try {
             compositeResultBean.setClinicalDataResult(clinicalDataProcessor.process(ct));
             compositeResultBean.setMutationDataResult(mutationDataProcessor.process(ct));
             compositeResultBean.setFusionDataResult(fusionDataProcessor.process(ct));
+            compositeResultBean.setGenePanelDataResult(genePanelDataProcessor.process(ct));
         }
         catch (NullPointerException ex ) {
-            LOG.error("Error processing clinical, fusion, or mutation data for case: " + ct.getCase());
+            LOG.error("Error processing clinical, fusion, mutation data, or gene panel data for case: " + ct.getCase());
             throw new RuntimeException(ex);
         }
-          
+
         return compositeResultBean;
     }
 
