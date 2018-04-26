@@ -65,7 +65,7 @@ public class ClinicalData {
     public ClinicalData(){}
     
     public ClinicalData(CaseType caseType) {
-        this.sampleId = caseType.getCase();
+        this.sampleId = caseType.getCase().replace(":", "-");
         this.gender = caseType.getVariantReport().getGender();
         this.studyId = caseType.getFmiCase();
         this.pipelineVersion = caseType.getVariantReport().getPipelineVersion() != null ? 
