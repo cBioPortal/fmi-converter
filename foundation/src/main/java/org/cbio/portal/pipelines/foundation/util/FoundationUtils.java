@@ -348,9 +348,10 @@ public class FoundationUtils {
                 fusionEvent += " " + description;
             }
         }
-
+        // some comments make the fusion event too large to store in db
         if (!Strings.isNullOrEmpty(comment)) {
-            fusionEvent += ": " + comment;
+            Integer upperLimit = (comment.length() > 100) ? 100 : comment.length();
+            fusionEvent += ": " + comment.substring(0, upperLimit);
         }
         return fusionEvent.trim();
     }    
