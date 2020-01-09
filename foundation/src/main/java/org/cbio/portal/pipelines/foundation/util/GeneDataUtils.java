@@ -109,7 +109,7 @@ public class GeneDataUtils {
                     String synonyms = record.getProperty(SYNONYMS_COLUMN);
 
                     // add ncRNAs to blacklist
-                    if (typeOfGene.equals("ncRNA")) {
+                    if (typeOfGene != null && !typeOfGene.isEmpty() && typeOfGene.equals("ncRNA")) {
                         ncRNABlackList.add(hugoSymbol);
                     }
 
